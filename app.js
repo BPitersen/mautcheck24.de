@@ -109,6 +109,7 @@ function fetchRoute(a, b, veh) {
       use_tracks: 0, use_living_streets: 0, service_penalty: 100, service_factor: 1.5,
     } },
     units: "kilometers",
+    alternates: 2,
   });
 }
 
@@ -128,7 +129,8 @@ async function analyzeTrip(trip) {
   }
   if (cur.length > 1) chunks.push(cur);
 
-  let kmAb = 0, kmBs = 0, kmFree = 0, driveH = 0;
+  let kmAb = 0, kmBs = 0, kmFree = 0, driveH = 0, minorKm = 0;
+  const MINOR = ["unclassified", "residential", "service", "track", "living_street"];
   const segments = { ab: [], bs: [], free: [] };
   for (const chunk of chunks) {
     const ta = await valhalla("/trace_attributes", {
@@ -146,13 +148,14 @@ async function analyzeTrip(trip) {
       if (kind === "ab") kmAb += e.length;
       else if (kind === "bs") kmBs += e.length;
       else kmFree += e.length;
+      if (MINOR.includes(e.road_class)) minorKm += e.length;
       const truckSpeed = Math.min(e.speed || 50, isAb ? 90 : 60);
       driveH += e.length / truckSpeed;
       const pts = taShape.slice(e.begin_shape_index, e.end_shape_index + 1);
       if (pts.length > 1) segments[kind].push(pts);
     }
   }
-  return { shape, kmAb, kmBs, kmFree, driveH, segments, km: trip.summary.length };
+  return { shape, kmAb, kmBs, kmFree, driveH, minorKm, segments, km: trip.summary.length };
 }
 
 // ---------- Hauptlogik ----------
@@ -189,8 +192,27 @@ async function calc() {
     const co2Class = $("co2").value;
     const rate = tollRate(vehicleSel.value, co2Class);
 
-    status.textContent = "Analysiere mautpflichtige Abschnitte …";
-    const main = await analyzeTrip(mainRes.trip);
+    status.textContent = "Analysiere Route …";
+    let main = await analyzeTrip(mainRes.trip);
+
+    // Nutzt die schnellste Route auffällig viel Nebenstraße (unclassified/residential/…)?
+    // Dann Alternativen prüfen und die straßenklassen-beste wählen: wenigste Nebenstraßen-km
+    // bei vergleichbarer Fahrzeit (max. +25 %). Verhindert enge Abkürzungen als Durchfahrt,
+    // lässt aber die letzte Meile zum Start/Ziel offen.
+    const alts = mainRes.alternates || [];
+    if (alts.length && main.minorKm > Math.max(3, 0.06 * main.km)) {
+      status.textContent = "Prüfe besser ausgebaute Alternativen …";
+      const candidates = [main];
+      for (const alt of alts) candidates.push(await analyzeTrip(alt.trip));
+      const minTime = Math.min(...candidates.map((c) => c.driveH));
+      main = candidates
+        .filter((c) => c.driveH <= minTime * 1.25)
+        .reduce((best, c) => {
+          if (c.minorKm < best.minorKm - 0.5) return c;      // deutlich weniger Nebenstraße
+          if (best.minorKm < c.minorKm - 0.5) return best;
+          return c.driveH < best.driveH ? c : best;          // bei Gleichstand: schneller
+        });
+    }
     main.toll = (main.kmAb + main.kmBs) * rate;
 
     // Lenk- und Ruhezeiten nach EU-VO 561/2006:
