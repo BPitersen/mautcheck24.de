@@ -313,6 +313,14 @@ table.rates td b { color: var(--brand); font-weight: 800; }
 .topic-links a { padding: 9px 12px; background: #eef4ff; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: .86rem; }
 .route-list { display: grid; gap: 10px; margin: 18px 0; }
 .route-list span { float: right; color: var(--brand); }
+.metric-grid, .case-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin: 20px 0; }
+.metric-grid > div, .case-grid > div { padding: 16px; background: #f7f9fd; border: 1px solid var(--border); border-radius: var(--radius-sm); }
+.metric-grid strong, .metric-grid span { display: block; }
+.metric-grid strong { color: var(--brand-deep); font-size: 1.05rem; }
+.metric-grid span { color: var(--muted); font-size: .78rem; margin-top: 4px; }
+.case-grid p { margin: 6px 0 0; font-size: .9rem; }
+.editorial-note { margin-top: 34px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--muted) !important; font-size: .78rem; }
+.source-links { padding: 12px 0; font-weight: 600; }
 
 /* ===== Responsive ===== */
 @media (max-width: 680px) {

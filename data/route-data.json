@@ -1,0 +1,311 @@
+{
+  "generatedAt": "2026-07-24T18:30:39.376Z",
+  "routes": {
+    "hamburg-muenchen": {
+      "distanceKm": 807,
+      "driveMinutes": 470,
+      "roads": [
+        "A7",
+        "A2",
+        "A14",
+        "A9",
+        "A99",
+        "A94"
+      ]
+    },
+    "berlin-koeln": {
+      "distanceKm": 573,
+      "driveMinutes": 372,
+      "roads": [
+        "A10",
+        "A2",
+        "A1"
+      ]
+    },
+    "frankfurt-hamburg": {
+      "distanceKm": 481,
+      "driveMinutes": 307,
+      "roads": [
+        "A661",
+        "A5",
+        "A49",
+        "A44",
+        "A7",
+        "A1"
+      ]
+    },
+    "hamburg-berlin": {
+      "distanceKm": 289,
+      "driveMinutes": 191,
+      "roads": [
+        "A24",
+        "A114"
+      ]
+    },
+    "berlin-muenchen": {
+      "distanceKm": 601,
+      "driveMinutes": 360,
+      "roads": [
+        "A9",
+        "A99",
+        "A94"
+      ]
+    },
+    "koeln-muenchen": {
+      "distanceKm": 591,
+      "driveMinutes": 354,
+      "roads": [
+        "A4",
+        "A3",
+        "A9",
+        "A99",
+        "A94"
+      ]
+    },
+    "frankfurt-muenchen": {
+      "distanceKm": 409,
+      "driveMinutes": 251,
+      "roads": [
+        "A3",
+        "A9",
+        "A99",
+        "A94"
+      ]
+    },
+    "stuttgart-hamburg": {
+      "distanceKm": 668,
+      "driveMinutes": 421,
+      "roads": [
+        "A81",
+        "A3",
+        "A7",
+        "A1",
+        "A255"
+      ]
+    },
+    "duesseldorf-berlin": {
+      "distanceKm": 559,
+      "driveMinutes": 363,
+      "roads": [
+        "A46",
+        "A1",
+        "A2",
+        "A10",
+        "A115"
+      ]
+    },
+    "leipzig-koeln": {
+      "distanceKm": 498,
+      "driveMinutes": 305,
+      "roads": [
+        "A38",
+        "A7",
+        "A44",
+        "A1"
+      ]
+    },
+    "dortmund-muenchen": {
+      "distanceKm": 622,
+      "driveMinutes": 372,
+      "roads": [
+        "A45",
+        "A3",
+        "A9",
+        "A99",
+        "A94"
+      ]
+    },
+    "bremen-stuttgart": {
+      "distanceKm": 642,
+      "driveMinutes": 415,
+      "roads": [
+        "A1",
+        "A27",
+        "A7",
+        "A3",
+        "A81"
+      ]
+    },
+    "hannover-frankfurt": {
+      "distanceKm": 338,
+      "driveMinutes": 220,
+      "roads": [
+        "A37",
+        "A7",
+        "A49",
+        "A5",
+        "A661"
+      ]
+    },
+    "nuernberg-hamburg": {
+      "distanceKm": 607,
+      "driveMinutes": 376,
+      "roads": [
+        "A3",
+        "A7",
+        "A1",
+        "A255"
+      ]
+    },
+    "dresden-koeln": {
+      "distanceKm": 569,
+      "driveMinutes": 337,
+      "roads": [
+        "A4",
+        "A7",
+        "A5",
+        "A480",
+        "A45"
+      ]
+    },
+    "erfurt-hamburg": {
+      "distanceKm": 393,
+      "driveMinutes": 258,
+      "roads": [
+        "A71",
+        "A38",
+        "A7",
+        "A1",
+        "A255"
+      ]
+    },
+    "rostock-muenchen": {
+      "distanceKm": 792,
+      "driveMinutes": 453,
+      "roads": [
+        "A10",
+        "A9",
+        "A99",
+        "A94"
+      ]
+    },
+    "hamburg-koeln": {
+      "distanceKm": 425,
+      "driveMinutes": 273,
+      "roads": [
+        "A1"
+      ]
+    },
+    "berlin-frankfurt": {
+      "distanceKm": 546,
+      "driveMinutes": 332,
+      "roads": [
+        "A9",
+        "A4",
+        "A7",
+        "A5",
+        "A661"
+      ]
+    },
+    "koeln-stuttgart": {
+      "distanceKm": 370,
+      "driveMinutes": 248,
+      "roads": [
+        "A4",
+        "A3",
+        "A67",
+        "A6",
+        "A81"
+      ]
+    },
+    "muenchen-leipzig": {
+      "distanceKm": 424,
+      "driveMinutes": 262,
+      "roads": [
+        "A9"
+      ]
+    },
+    "frankfurt-berlin": {
+      "distanceKm": 546,
+      "driveMinutes": 335,
+      "roads": [
+        "A661",
+        "A5",
+        "A9",
+        "A115"
+      ]
+    },
+    "bremen-muenchen": {
+      "distanceKm": 779,
+      "driveMinutes": 461,
+      "roads": [
+        "A1",
+        "A27",
+        "A7",
+        "A2",
+        "A14",
+        "A9"
+      ]
+    },
+    "hannover-muenchen": {
+      "distanceKm": 649,
+      "driveMinutes": 393,
+      "roads": [
+        "A37",
+        "A7",
+        "A3",
+        "A9",
+        "A99",
+        "A94"
+      ]
+    },
+    "dresden-hamburg": {
+      "distanceKm": 507,
+      "driveMinutes": 311,
+      "roads": [
+        "A4",
+        "A13",
+        "A10",
+        "A24",
+        "A1",
+        "A255"
+      ]
+    },
+    "dortmund-berlin": {
+      "distanceKm": 494,
+      "driveMinutes": 324,
+      "roads": [
+        "A1",
+        "A2",
+        "A10",
+        "A115"
+      ]
+    },
+    "stuttgart-berlin": {
+      "distanceKm": 632,
+      "driveMinutes": 390,
+      "roads": [
+        "A81",
+        "A6",
+        "A9",
+        "A115"
+      ]
+    },
+    "nuernberg-koeln": {
+      "distanceKm": 406,
+      "driveMinutes": 252,
+      "roads": [
+        "A3",
+        "A4"
+      ]
+    },
+    "rostock-berlin": {
+      "distanceKm": 230,
+      "driveMinutes": 153,
+      "roads": [
+        "A114"
+      ]
+    },
+    "leipzig-hamburg": {
+      "distanceKm": 397,
+      "driveMinutes": 250,
+      "roads": [
+        "A14",
+        "A2",
+        "A7",
+        "A1",
+        "A255"
+      ]
+    }
+  }
+}

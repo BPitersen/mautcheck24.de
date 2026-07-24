@@ -14,7 +14,12 @@ Fahrzeug-, Routen-, Autobahn- und Handwerkerseiten werden zentral durch
 
 ```bash
 node scripts/generate-seo-pages.mjs
+node scripts/enhance-seo.mjs
 ```
 
 Der Generator aktualisiert auch `sitemap.xml`. Die erzeugten HTML-Dateien werden
 mitcommittet, damit das statische Hosting keinen Build-Schritt benötigt.
+
+`scripts/fetch-route-data.mjs` aktualisiert die gespeicherten Routingwerte über
+Valhalla. Das Skript benötigt Netzwerkzugriff und sollte nur ausgeführt werden,
+wenn die Orientierungswerte neu berechnet werden sollen.
