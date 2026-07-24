@@ -100,8 +100,14 @@ function fetchRoute(a, b, veh) {
   return valhalla("/route", {
     locations: [{ lat: a.lat, lon: a.lon }, { lat: b.lat, lon: b.lon }],
     costing: "truck",
-    costing_options: { truck: { weight: veh.weight, axle_count: veh.axles,
-      height: veh.height, width: 2.55, length: veh.length } },
+    costing_options: { truck: {
+      weight: veh.weight, axle_count: veh.axles,
+      height: veh.height, width: 2.55, length: veh.length,
+      // Feldwege (highway=track), Wohnstraßen-Durchfahrten und Erschließungswege meiden,
+      // damit die klassifizierte Straße (tertiary/secondary/primary/motorway) bevorzugt wird.
+      // Hinweis: harte Anfahrt zum Start/Ziel bleibt möglich (letzte Meile).
+      use_tracks: 0, use_living_streets: 0, service_penalty: 100, service_factor: 1.5,
+    } },
     units: "kilometers",
   });
 }
