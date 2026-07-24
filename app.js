@@ -8,6 +8,8 @@ L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
 }).addTo(map);
 let routeLayer = L.layerGroup().addTo(map);
+let constrLayer = L.layerGroup().addTo(map);
+const constrIcon = L.divIcon({ className: "constr-icon", html: "🚧", iconSize: [22, 22], iconAnchor: [11, 11] });
 
 // Kartengröße nach Fenster-/Orientierungswechsel neu berechnen (verhindert graue Kacheln)
 window.addEventListener("resize", () => map.invalidateSize());
@@ -185,6 +187,48 @@ async function analyzeTrip(trip) {
     segments, km: trip.summary.length };
 }
 
+// Baustellen/Sperrungen (highway=construction) im Kartenausschnitt via Overpass anzeigen.
+// Läuft asynchron nach der Routenanzeige und blockiert die Berechnung nicht.
+async function showConstruction(routeShape, routeKm) {
+  constrLayer.clearLayers();
+  if (routeKm > 120) return; // bei langen Routen unpraktisch (riesiger Ausschnitt / Overpass-Last)
+  let s = 90, w = 180, n = -90, e = -180;
+  for (const [la, lo] of routeShape) {
+    s = Math.min(s, la); n = Math.max(n, la); w = Math.min(w, lo); e = Math.max(e, lo);
+  }
+  const pad = 0.02; // ~2 km Puffer
+  const q = `[out:json][timeout:25];way["highway"="construction"]` +
+    `(${s - pad},${w - pad},${n + pad},${e + pad});out geom;`;
+  const res = await fetch("https://overpass-api.de/api/interpreter",
+    { method: "POST", body: "data=" + encodeURIComponent(q) });
+  if (!res.ok) return;
+  const data = await res.json();
+  const showAll = routeKm < 60; // kurze Route: alles im Ausschnitt; sonst nur nahe der Route
+  const sample = showAll ? [] : routeShape.filter((_, i) => i % 8 === 0); // Filter beschleunigen
+  let count = 0;
+  const seen = new Set();
+  for (const el of data.elements || []) {
+    const g = el.geometry;
+    if (!g || !g.length) continue;
+    if (!showAll) {
+      let near = false;
+      outer: for (const p of g) {
+        for (const [la, lo] of sample) {
+          if (havKm([p.lat, p.lon], [la, lo]) < 2) { near = true; break outer; }
+        }
+      }
+      if (!near) continue;
+    }
+    const name = (el.tags && el.tags.name) || "Straße";
+    if (seen.has(name) && name !== "Straße") continue; // je Straßenname nur ein Marker
+    seen.add(name);
+    const mid = g[Math.floor(g.length / 2)];
+    L.marker([mid.lat, mid.lon], { icon: constrIcon }).addTo(constrLayer)
+      .bindPopup(`🚧 <b>${name}</b><br>Baustelle / gesperrt (OSM)`);
+    if (++count >= 40) break;
+  }
+}
+
 // ---------- Hauptlogik ----------
 const $ = (id) => document.getElementById(id);
 const fmtKm = (km) => km.toLocaleString("de-DE", { maximumFractionDigits: 1 }) + " km";
@@ -274,6 +318,9 @@ async function calc() {
     L.marker([a.lat, a.lon]).addTo(routeLayer).bindPopup("Start");
     L.marker([b.lat, b.lon]).addTo(routeLayer).bindPopup("Ziel");
     map.fitBounds(L.latLngBounds(main.shape), { padding: [40, 40] });
+
+    // Baustellen im Ausschnitt nachladen (nicht-blockierend)
+    showConstruction(main.shape, main.km).catch(() => {});
 
     // Ergebnis anzeigen
     const parts = [];
