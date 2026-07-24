@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0f295e"/>
+      <stop offset="1" stop-color="#1d4ed8"/>
+    </linearGradient>
+    <style>text { font-family: "Helvetica Neue", Arial, sans-serif; }</style>
+  </defs>
+
+  <rect width="1200" height="1200" fill="url(#bg)"/>
+
+  <!-- Motiv vertikal zentriert (Band y=285..915), damit zentrierter 630er-Crop passt -->
+  <g transform="translate(0,285)">
+    <!-- dezente Routen-Grafik rechts -->
+    <g opacity="0.5" fill="none" stroke="#9dc0ff" stroke-width="5" stroke-dasharray="2 18" stroke-linecap="round">
+      <path d="M770 540 C 900 430, 820 300, 960 210 S 1120 150, 1120 90"/>
+    </g>
+    <circle cx="770" cy="540" r="12" fill="#ffffff" opacity="0.9"/>
+    <path d="M1120 60c-26 0-47 21-47 47 0 33 47 73 47 73s47-40 47-73c0-26-21-47-47-47z" fill="#ffffff" opacity="0.9"/>
+    <circle cx="1120" cy="107" r="16" fill="#1d4ed8"/>
+
+    <!-- Logo -->
+    <g transform="translate(72,40)">
+      <rect width="62" height="62" rx="16" fill="#ffffff"/>
+      <path d="M17 33l8.5 8.5L45 19" fill="none" stroke="#1d4ed8" stroke-width="6.5"
+            stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="82" y="44" font-size="36" font-weight="800" letter-spacing="-1">
+        <tspan fill="#ffffff">mautcheck</tspan><tspan fill="#9dc0ff">24</tspan>
+      </text>
+    </g>
+
+    <!-- Headline -->
+    <text x="72" y="220" font-size="82" font-weight="800" letter-spacing="-2" fill="#ffffff">Lkw-Maut-Rechner</text>
+    <text x="72" y="302" font-size="82" font-weight="800" letter-spacing="-2" fill="#ffffff">für Deutschland</text>
+
+    <!-- Subline -->
+    <text x="74" y="370" font-size="31" fill="#c9dbff">Start &amp; Ziel eingeben – Route und exakte Maut kostenlos berechnen.</text>
+
+    <!-- Chips -->
+    <g font-size="26" font-weight="600" fill="#ffffff">
+      <g transform="translate(72,416)">
+        <rect width="196" height="52" rx="26" fill="#ffffff" opacity="0.14"/>
+        <text x="30" y="34">✓ kostenlos</text>
+      </g>
+      <g transform="translate(286,416)">
+        <rect width="252" height="52" rx="26" fill="#ffffff" opacity="0.14"/>
+        <text x="30" y="34">✓ ohne Anmeldung</text>
+      </g>
+      <g transform="translate(556,416)">
+        <rect width="262" height="52" rx="26" fill="#ffffff" opacity="0.14"/>
+        <text x="30" y="34">✓ inkl. Lenkzeiten</text>
+      </g>
+    </g>
+
+    <!-- Footer -->
+    <text x="72" y="524" font-size="30" font-weight="700" fill="#ffffff">mautcheck24.de</text>
+    <text x="1128" y="524" font-size="24" fill="#9dc0ff" text-anchor="end">Sätze nach BFStrMG 2026</text>
+  </g>
+</svg>
