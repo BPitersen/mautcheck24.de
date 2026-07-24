@@ -131,6 +131,16 @@ header .sub { color: var(--muted); font-size: .84rem; margin: 8px 0 22px; }
 /* ===== Ergebnis ===== */
 #result { margin-top: 22px; animation: fadeUp .35s ease; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.result-heading {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  margin-bottom: 10px; color: var(--brand-deep); font-size: .84rem;
+}
+.result-heading button {
+  border: 0; padding: 5px 0; background: transparent; color: var(--brand);
+  font: 600 .76rem/1.2 inherit; cursor: pointer;
+}
+.result-heading button:hover { text-decoration: underline; text-underline-offset: 3px; }
+.result-heading button:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; border-radius: 3px; }
 
 .toll-box {
   background: linear-gradient(140deg, var(--brand-deep), var(--brand));

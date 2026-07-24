@@ -222,6 +222,13 @@ const fmtH = (x) => { const hh = Math.floor(x), mm = Math.round((x - hh) * 60);
 $("go").addEventListener("click", calc);
 document.addEventListener("keydown", (e) => { if (e.key === "Enter") calc(); });
 $("share-print").addEventListener("click", () => window.print());
+$("edit-inputs").addEventListener("click", () => {
+  $("panel").scrollTo({
+    top: 0,
+    behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+  });
+  $("start").focus({ preventScroll: true });
+});
 $("share-copy").addEventListener("click", async () => {
   try {
     await navigator.clipboard.writeText(buildShareUrl());
@@ -335,6 +342,19 @@ async function calc() {
     updateShareLinks();
     history.replaceState(null, "", buildShareUrl());
     status.textContent = "";
+
+    // Ergebnisdetails im eigenen Panel sichtbar machen. Die Karte und die Seite
+    // behalten ihre Position; bei reduzierter Bewegung wird nicht animiert.
+    requestAnimationFrame(() => {
+      const panel = $("panel");
+      const result = $("result");
+      const panelRect = panel.getBoundingClientRect();
+      const resultRect = result.getBoundingClientRect();
+      panel.scrollTo({
+        top: Math.max(0, panel.scrollTop + resultRect.top - panelRect.top - 18),
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+      });
+    });
   } catch (err) {
     status.className = "";
     status.textContent = err.message || "Fehler bei der Berechnung.";

@@ -118,13 +118,19 @@
             <option value="5">Klasse 5 – emissionsfrei*</option>
           </select>
         </div>
-        <p class="note">*Emissionsfreie schwere Nutzfahrzeuge sind nach aktuellem BFStrMG bis 30. Juni 2031 mautbefreit. Emissionsklasse Euro VI vorausgesetzt.</p>
+        <p class="note">*Emissionsfreie schwere Nutzfahrzeuge sind nach aktuellem BFStrMG bis
+          30. Juni 2031 mautbefreit. Emissionsklasse Euro VI vorausgesetzt.
+          <a href="/co2-emissionsklasse-lkw/">Wie finde ich die CO₂-Klasse meines Lkw?</a></p>
       </details>
 
       <button id="go">Route &amp; Maut berechnen</button>
       <div id="status"></div>
 
       <div id="result" hidden>
+        <div class="result-heading">
+          <strong>Dein Ergebnis</strong>
+          <button type="button" id="edit-inputs">Eingaben bearbeiten ↑</button>
+        </div>
         <div class="toll-box">
           <div class="toll-label">Maut für diese Strecke</div>
           <div class="toll-amount" id="r-toll">–</div>
