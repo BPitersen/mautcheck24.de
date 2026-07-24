@@ -9,6 +9,9 @@ L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
 }).addTo(map);
 let routeLayer = L.layerGroup().addTo(map);
 
+// Kartengröße nach Fenster-/Orientierungswechsel neu berechnen (verhindert graue Kacheln)
+window.addEventListener("resize", () => map.invalidateSize());
+
 // ---------- Fahrzeug-Dropdown ----------
 const vehicleSel = document.getElementById("vehicle");
 for (const [key, v] of Object.entries(VEHICLES)) {

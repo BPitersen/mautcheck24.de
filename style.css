@@ -29,8 +29,9 @@ body {
 
 /* ===== HERO: Rechner + Karte ===== */
 .hero {
-  display: flex; height: 88vh; min-height: 580px;
-  padding: 16px; gap: 16px;
+  display: flex; height: calc(92vh - 68px); min-height: 540px;
+  padding: 20px; gap: 18px;
+  background: linear-gradient(160deg, #0f295e 0%, #1d4ed8 100%);
 }
 
 #panel {
@@ -53,10 +54,10 @@ body {
 .brand-24 { color: var(--brand); }
 
 header h1 {
-  font-size: clamp(1.05rem, .9rem + .7vw, 1.24rem); font-weight: 700;
-  color: var(--text); letter-spacing: -.01em; line-height: 1.25;
+  font-size: clamp(1.25rem, 1rem + 1vw, 1.5rem); font-weight: 800;
+  color: var(--brand-deep); letter-spacing: -.02em; line-height: 1.2;
 }
-header .sub { color: var(--muted); font-size: .84rem; margin: 6px 0 22px; }
+header .sub { color: var(--muted); font-size: .84rem; margin: 8px 0 22px; }
 
 /* ===== Formularfelder ===== */
 .field { margin-bottom: 16px; position: relative; }
@@ -219,7 +220,7 @@ table.rates td b { color: var(--brand); font-weight: 800; }
   font-size: clamp(1.25rem, 1rem + 1.3vw, 1.55rem); font-weight: 800; color: var(--brand-deep);
   margin-bottom: 16px; letter-spacing: -.01em;
 }
-.related-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.related-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
 .related-grid a {
   display: block; text-decoration: none; background: var(--card); border: 1px solid var(--border);
   border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow-sm);
@@ -232,19 +233,22 @@ table.rates td b { color: var(--brand); font-weight: 800; }
 /* ===== Unterseiten ===== */
 .topbar {
   display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
-  max-width: 960px; margin: 0 auto; padding: 18px 24px;
-  border-bottom: 1px solid var(--border);
+  padding: 15px max(24px, calc((100% - 960px) / 2));
+  background: linear-gradient(135deg, #0f295e 0%, #1d4ed8 100%);
 }
 .topbar .brand { margin-bottom: 0; }
-.topbar .brand-name { font-size: 1.2rem; }
+.topbar .brand-name { font-size: 1.2rem; color: #fff; }
+.topbar .brand-24 { color: #9dc0ff; }
 .topbar .brand-mark { width: 34px; height: 34px; }
-.topnav { display: flex; gap: 6px; flex-wrap: wrap; }
+.topbar .brand-mark rect { fill: #fff; }
+.topbar .brand-mark path { stroke: #1d4ed8; }
+.topnav { display: flex; gap: 4px; flex-wrap: wrap; }
 .topnav a {
-  text-decoration: none; color: #46506a; font-size: .88rem; font-weight: 600;
+  text-decoration: none; color: #cdddff; font-size: .88rem; font-weight: 600;
   padding: 8px 12px; border-radius: 8px; transition: background .12s, color .12s;
 }
-.topnav a:hover { background: #eef4ff; color: var(--brand-dark); }
-.topnav a[aria-current="page"] { background: #e7efff; color: var(--brand-dark); }
+.topnav a:hover { background: rgba(255,255,255,.14); color: #fff; }
+.topnav a[aria-current="page"] { background: rgba(255,255,255,.20); color: #fff; }
 
 .subpage { padding-top: clamp(28px, 4vw, 44px); }
 .subpage .crumbs { font-size: .8rem; color: var(--muted); margin-bottom: 10px; }

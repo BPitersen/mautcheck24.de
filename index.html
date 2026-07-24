@@ -47,24 +47,34 @@
   </script>
 </head>
 <body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="mautcheck24 – Startseite">
+      <svg class="brand-mark" viewBox="0 0 48 48" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="brandGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#2f6fe4"/>
+            <stop offset="1" stop-color="#1d4ed8"/>
+          </linearGradient>
+        </defs>
+        <rect width="48" height="48" rx="12" fill="url(#brandGrad)"/>
+        <path d="M13 25.5l6.5 6.5L35 14.5" fill="none" stroke="#fff" stroke-width="5"
+              stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="brand-name">mautcheck<span class="brand-24">24</span></span>
+    </a>
+    <nav class="topnav">
+      <a href="/" aria-current="page">Rechner</a>
+      <a href="/mautsaetze/">Mautsätze</a>
+      <a href="/lkw-maut-2026/">Maut 2026</a>
+      <a href="/lenk-und-ruhezeiten/">Lenkzeiten</a>
+      <a href="/maut-sparen/">Maut sparen</a>
+    </nav>
+  </header>
+
   <!-- HERO: Rechner -->
   <section class="hero">
     <aside id="panel">
       <header>
-        <a class="brand" href="/" aria-label="mautcheck24 – Startseite">
-          <svg class="brand-mark" viewBox="0 0 48 48" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="brandGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stop-color="#2f6fe4"/>
-                <stop offset="1" stop-color="#1d4ed8"/>
-              </linearGradient>
-            </defs>
-            <rect width="48" height="48" rx="12" fill="url(#brandGrad)"/>
-            <path d="M13 25.5l6.5 6.5L35 14.5" fill="none" stroke="#fff" stroke-width="5"
-                  stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <span class="brand-name">mautcheck<span class="brand-24">24</span></span>
-        </a>
         <h1>Lkw-Maut-Rechner Deutschland</h1>
         <p class="sub">Kostenlos Route &amp; Maut berechnen · Sätze nach BFStrMG (Stand 2026)</p>
       </header>
@@ -259,6 +269,14 @@
         <a href="/lenk-und-ruhezeiten/">
           <strong>Lenk- &amp; Ruhezeiten</strong>
           <span>EU-Verordnung 561/2006 einfach erklärt: Pausen, Tagesruhe, Wochenlenkzeit.</span>
+        </a>
+        <a href="/maut-sparen/">
+          <strong>Lkw-Maut sparen</strong>
+          <span>Legale Tipps, mit denen du die Mautkosten pro Tour spürbar senkst.</span>
+        </a>
+        <a href="/mautpflichtige-fahrzeuge/">
+          <strong>Mautpflichtige Fahrzeuge</strong>
+          <span>Ab wann ein Fahrzeug mautpflichtig ist – und welche Ausnahmen gelten.</span>
         </a>
       </div>
     </nav>
