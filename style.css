@@ -1,0 +1,119 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; color: #1c2333; background: #fff; }
+
+/* HERO: Rechner + Karte, füllt den ersten Bildschirm */
+.hero { display: flex; height: 90vh; min-height: 560px; }
+
+#panel {
+  width: 400px; min-width: 340px; height: 100%; overflow-y: auto;
+  padding: 24px; background: #fff; box-shadow: 2px 0 12px rgba(0,0,0,.12); z-index: 1000;
+}
+header h1 { font-size: 1.35rem; color: #143c8c; }
+header .sub { color: #777; font-size: .8rem; margin: 4px 0 20px; }
+
+.field { margin-bottom: 14px; position: relative; }
+.field label { display: block; font-size: .78rem; font-weight: 600; color: #555; margin-bottom: 4px; }
+.field input, .field select {
+  width: 100%; padding: 10px 12px; border: 1px solid #ccd3e0; border-radius: 8px;
+  font-size: .95rem; background: #fafbfd;
+}
+.field input:focus, .field select:focus { outline: 2px solid #2f6fe4; border-color: transparent; }
+
+.autocomplete .suggestions {
+  position: absolute; top: 100%; left: 0; right: 0; background: #fff; z-index: 1100;
+  border: 1px solid #ccd3e0; border-radius: 8px; margin-top: 2px; overflow: hidden;
+  box-shadow: 0 6px 18px rgba(0,0,0,.15); display: none;
+}
+.autocomplete .suggestions.open { display: block; }
+.autocomplete .suggestions div { padding: 9px 12px; font-size: .85rem; cursor: pointer; }
+.autocomplete .suggestions div:hover { background: #eef3fc; }
+
+.advanced { margin-bottom: 14px; }
+.advanced summary { font-size: .8rem; color: #2f6fe4; cursor: pointer; margin-bottom: 8px; }
+.note { font-size: .72rem; color: #999; line-height: 1.4; margin-top: 8px; }
+
+#go {
+  width: 100%; padding: 13px; background: #2f6fe4; color: #fff; border: none;
+  border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer;
+}
+#go:hover { background: #1f5ccc; }
+#go:disabled { background: #a9bede; cursor: wait; }
+
+#status { font-size: .82rem; color: #b03030; margin-top: 10px; min-height: 1.2em; }
+#status.working { color: #666; }
+
+#result { margin-top: 18px; }
+.toll-box {
+  background: linear-gradient(135deg, #143c8c, #2f6fe4); color: #fff;
+  border-radius: 12px; padding: 18px; text-align: center; margin-bottom: 14px;
+}
+.toll-label { font-size: .78rem; opacity: .85; }
+.toll-amount { font-size: 2.1rem; font-weight: 700; margin: 4px 0; }
+.toll-rate { font-size: .75rem; opacity: .85; }
+
+.stats { display: flex; gap: 8px; margin-bottom: 14px; }
+.stat {
+  flex: 1; background: #f2f5fa; border-radius: 8px; padding: 10px 6px; text-align: center;
+}
+.stat span { display: block; font-weight: 700; font-size: .95rem; color: #143c8c; }
+.stat small { color: #888; font-size: .7rem; }
+
+.breaks { font-size: .76rem; color: #666; margin: -6px 0 12px; text-align: center; }
+
+.breakdown { width: 100%; border-collapse: collapse; font-size: .85rem; }
+.breakdown td { padding: 7px 4px; border-bottom: 1px solid #eef1f6; }
+.breakdown td:last-child { text-align: right; font-weight: 600; }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; }
+.dot.ab { background: #e8641b; }
+.dot.bs { background: #e8a51b; }
+.dot.free { background: #2f6fe4; }
+
+#map { flex: 1; height: 100%; }
+
+/* CONTENT: SEO-Textbereich unter dem Rechner */
+.content {
+  max-width: 780px; margin: 0 auto; padding: 48px 24px 64px;
+  line-height: 1.65; font-size: 1rem;
+}
+.content h2 {
+  font-size: 1.35rem; color: #143c8c; margin: 34px 0 12px; line-height: 1.3;
+}
+.content h2:first-child { margin-top: 0; }
+.content p { margin-bottom: 14px; color: #333; }
+.content p.small { font-size: .85rem; color: #666; }
+.content strong { color: #1c2333; }
+
+.table-wrap { overflow-x: auto; margin: 18px 0; }
+table.rates { width: 100%; border-collapse: collapse; font-size: .9rem; min-width: 520px; }
+table.rates th, table.rates td { padding: 9px 10px; text-align: right; border-bottom: 1px solid #e6eaf2; }
+table.rates th:first-child, table.rates td:first-child { text-align: left; }
+table.rates thead th { background: #f2f5fa; color: #143c8c; font-weight: 700; border-bottom: 2px solid #d6deec; }
+table.rates tbody tr:hover { background: #fafbfd; }
+table.rates td b { color: #143c8c; }
+
+.faq { margin-top: 40px; }
+.faq details {
+  border: 1px solid #e6eaf2; border-radius: 8px; margin-bottom: 10px; padding: 0 16px;
+  background: #fff;
+}
+.faq summary {
+  font-weight: 600; cursor: pointer; padding: 14px 0; font-size: .98rem; color: #1c2333;
+  list-style: none;
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; float: right; color: #2f6fe4; font-weight: 700; }
+.faq details[open] summary::after { content: "–"; }
+.faq details p { padding-bottom: 14px; margin: 0; color: #444; font-size: .92rem; }
+
+.site-footer {
+  margin-top: 48px; padding-top: 24px; border-top: 1px solid #e6eaf2;
+  font-size: .8rem; color: #888; text-align: center;
+}
+
+@media (max-width: 720px) {
+  .hero { flex-direction: column; height: auto; min-height: 0; }
+  #panel { width: 100%; height: auto; }
+  #map { width: 100%; height: 60vh; min-height: 340px; }
+  .content { padding: 32px 18px 48px; }
+}

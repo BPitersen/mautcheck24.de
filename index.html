@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Primäres SEO -->
+  <title>Lkw-Maut-Rechner 2026 – kostenlos Route &amp; Maut berechnen</title>
+  <meta name="description" content="Kostenloser Lkw-Maut-Rechner für Deutschland: Start und Ziel eingeben, LKW-Route auf der Karte sehen und die exakte Maut nach BFStrMG 2026 berechnen – inklusive Lenk- und Ruhezeiten. Ohne Anmeldung.">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="theme-color" content="#143c8c">
+  <link rel="canonical" href="https://mautcheck24.de/">
+
+  <!-- Open Graph / Social -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Lkw-Maut-Rechner 2026 – kostenlos Route &amp; Maut berechnen">
+  <meta property="og:description" content="Adresse eingeben, LKW-Route sehen und die Maut nach BFStrMG 2026 exakt berechnen – kostenlos, ohne Anmeldung.">
+  <meta property="og:url" content="https://mautcheck24.de/">
+  <meta property="og:locale" content="de_DE">
+  <meta property="og:site_name" content="Lkw-Maut-Rechner">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Lkw-Maut-Rechner 2026 – kostenlos Route &amp; Maut berechnen">
+  <meta name="twitter:description" content="Adresse eingeben, LKW-Route sehen und die Maut nach BFStrMG 2026 exakt berechnen – kostenlos, ohne Anmeldung.">
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Structured Data: WebApplication -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Lkw-Maut-Rechner",
+    "url": "https://mautcheck24.de/",
+    "applicationCategory": "TravelApplication",
+    "operatingSystem": "Web",
+    "inLanguage": "de-DE",
+    "description": "Kostenloser Lkw-Maut-Rechner für Deutschland mit Routenplanung, Maut nach BFStrMG 2026 und Lenk- und Ruhezeiten.",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" }
+  }
+  </script>
+</head>
+<body>
+  <!-- HERO: Rechner -->
+  <section class="hero">
+    <aside id="panel">
+      <header>
+        <h1>🚛 Lkw-Maut-Rechner Deutschland</h1>
+        <p class="sub">Kostenlos Route &amp; Maut berechnen · Sätze nach BFStrMG (Stand 2026)</p>
+      </header>
+
+      <div class="field autocomplete">
+        <label for="start">Start</label>
+        <input id="start" type="text" placeholder="Adresse oder Ort" autocomplete="off">
+        <div class="suggestions" id="start-sug"></div>
+      </div>
+
+      <div class="field autocomplete">
+        <label for="dest">Ziel</label>
+        <input id="dest" type="text" placeholder="Adresse oder Ort" autocomplete="off">
+        <div class="suggestions" id="dest-sug"></div>
+      </div>
+
+      <div class="field">
+        <label for="vehicle">Fahrzeug</label>
+        <select id="vehicle"></select>
+      </div>
+
+      <details class="advanced">
+        <summary>Erweitert</summary>
+        <div class="field">
+          <label for="co2">CO₂-Klasse</label>
+          <select id="co2">
+            <option value="1" selected>Klasse 1 – Standard-Diesel</option>
+            <option value="2">Klasse 2</option>
+            <option value="3">Klasse 3</option>
+            <option value="4">Klasse 4</option>
+            <option value="5">Klasse 5 – emissionsfrei*</option>
+          </select>
+        </div>
+        <p class="note">*E-Lkw: Sonderregeln ab 2026, Wert ist Näherung. Emissionsklasse Euro VI vorausgesetzt.</p>
+      </details>
+
+      <button id="go">Route &amp; Maut berechnen</button>
+      <div id="status"></div>
+
+      <div id="result" hidden>
+        <div class="toll-box">
+          <div class="toll-label">Maut für diese Strecke</div>
+          <div class="toll-amount" id="r-toll">–</div>
+          <div class="toll-rate" id="r-rate"></div>
+        </div>
+        <div class="stats">
+          <div class="stat"><span id="r-dist">–</span><small>Gesamt</small></div>
+          <div class="stat"><span id="r-time">–</span><small>Fahrzeit</small></div>
+          <div class="stat"><span id="r-tollkm">–</span><small>mautpflichtig</small></div>
+        </div>
+        <p class="breaks" id="r-breaks"></p>
+        <table class="breakdown">
+          <tr><td><i class="dot ab"></i>Autobahn</td><td id="r-ab">–</td></tr>
+          <tr><td><i class="dot bs"></i>Bundesstraße</td><td id="r-bs">–</td></tr>
+          <tr><td><i class="dot free"></i>mautfrei</td><td id="r-free">–</td></tr>
+        </table>
+        <p class="note">Routing: OpenStreetMap/Valhalla · Mautsätze: BFStrMG Anlage&nbsp;1.
+          Ohne Gewähr – geringfügige Abweichungen zur amtlichen Toll-Collect-Abrechnung möglich.</p>
+      </div>
+    </aside>
+
+    <div id="map"></div>
+  </section>
+
+  <!-- CONTENT: SEO-Inhalt -->
+  <article class="content">
+    <h2>Lkw-Maut in Deutschland 2026 – so berechnest du sie kostenlos</h2>
+    <p>
+      Mit diesem <strong>Lkw-Maut-Rechner</strong> ermittelst du in Sekunden, wie viel Maut du
+      für eine Fahrt durch Deutschland zahlst. Du gibst nur <strong>Start und Ziel</strong> ein
+      und wählst dein Fahrzeug (z.&nbsp;B. Sattelzug&nbsp;40&nbsp;t) – der Rechner plant eine
+      <strong>LKW-gerechte Route</strong>, erkennt die mautpflichtigen Autobahn- und
+      Bundesstraßen-Kilometer und berechnet die Maut nach den amtlichen Sätzen des
+      Bundesfernstraßenmautgesetzes (BFStrMG). Alles läuft direkt im Browser, ist
+      <strong>komplett kostenlos</strong> und funktioniert ohne Anmeldung.
+    </p>
+
+    <h2>Was kostet die Lkw-Maut pro Kilometer?</h2>
+    <p>
+      Der Mautsatz pro Kilometer setzt sich aus vier Teilen zusammen: Infrastrukturkosten,
+      Luftverschmutzungs- und Lärmbelastungskosten sowie – seit Dezember&nbsp;2023 – den Kosten
+      für verkehrsbedingte CO₂-Emissionen. Die folgende Tabelle zeigt die Sätze für
+      <strong>Euro&nbsp;VI, CO₂-Klasse&nbsp;1</strong> (Standard-Diesel) in Cent pro Kilometer:
+    </p>
+
+    <div class="table-wrap">
+      <table class="rates">
+        <thead>
+          <tr>
+            <th>Gewichtsklasse</th>
+            <th>Infra&shy;struktur</th>
+            <th>Luft</th>
+            <th>Lärm</th>
+            <th>CO₂ (Kl.&nbsp;1)</th>
+            <th>Gesamt</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>&gt; 3,5 – 7,49 t</td><td>5,2</td><td>1,1</td><td>1,4</td><td>7,4</td><td><b>15,1</b></td></tr>
+          <tr><td>7,5 – 11,99 t</td><td>6,6</td><td>1,5</td><td>1,6</td><td>8,0</td><td><b>17,7</b></td></tr>
+          <tr><td>12 – 18 t</td><td>10,7</td><td>1,5</td><td>1,6</td><td>10,0</td><td><b>23,8</b></td></tr>
+          <tr><td>&gt; 18 t, bis 3 Achsen</td><td>14,1</td><td>2,2</td><td>1,6</td><td>12,4</td><td><b>30,3</b></td></tr>
+          <tr><td>&gt; 18 t, 4 Achsen</td><td>15,5</td><td>2,3</td><td>1,2</td><td>13,4</td><td><b>32,4</b></td></tr>
+          <tr><td>&gt; 18 t, 5+ Achsen</td><td>15,5</td><td>2,3</td><td>1,2</td><td>15,8</td><td><b>34,8</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small">
+      Alle Angaben in ct/km. Ein <strong>40-Tonnen-Sattelzug (5&nbsp;Achsen)</strong> zahlt damit
+      34,8&nbsp;ct pro mautpflichtigem Kilometer. Bei besseren CO₂-Klassen (2–5) sinkt der
+      CO₂-Anteil deutlich, emissionsfreie Lkw sind bis Ende&nbsp;2025 ganz befreit.
+    </p>
+
+    <h2>Welche Straßen sind in Deutschland mautpflichtig?</h2>
+    <p>
+      Mautpflichtig sind <strong>alle Bundesautobahnen</strong> sowie <strong>alle
+      Bundesstraßen</strong>. Innerorts, auf Land-, Kreis- und Gemeindestraßen fällt keine
+      Maut an. Genau nach diesem Prinzip klassifiziert der Rechner jeden Streckenabschnitt und
+      zeigt Autobahn (orange), Bundesstraße (gelb) und mautfreie Abschnitte (blau) farblich auf
+      der Karte an.
+    </p>
+
+    <h2>Ab welchem Gewicht gilt die Lkw-Maut?</h2>
+    <p>
+      Seit dem <strong>1.&nbsp;Juli 2024</strong> gilt die Maut bereits ab
+      <strong>3,5&nbsp;Tonnen</strong> technisch zulässigem Gesamtgewicht. Für bestimmte
+      Handwerker­fahrzeuge gibt es eine Ausnahme. Zuvor lag die Grenze bei 7,5&nbsp;Tonnen.
+    </p>
+
+    <h2>Lenk- und Ruhezeiten inklusive</h2>
+    <p>
+      Neben Strecke und Maut schätzt der Rechner auch die realistische Fahrzeit für einen Lkw
+      (gedrosselt auf max.&nbsp;90&nbsp;km/h auf der Autobahn) und plant die gesetzlichen
+      <strong>Lenk- und Ruhezeiten nach EU-Verordnung&nbsp;561/2006</strong> ein: 45&nbsp;Minuten
+      Pause je 4,5&nbsp;Stunden Lenkzeit (teilbar in 15&nbsp;+&nbsp;30&nbsp;Minuten),
+      Tageslenkzeiten von 9&nbsp;Stunden (zweimal pro Woche auf 10&nbsp;Stunden verlängerbar)
+      und 11&nbsp;Stunden Tagesruhe.
+    </p>
+
+    <section class="faq">
+      <h2>Häufige Fragen zur Lkw-Maut</h2>
+
+      <details>
+        <summary>Ist dieser Lkw-Maut-Rechner wirklich kostenlos?</summary>
+        <p>Ja. Der Rechner ist vollständig kostenlos und ohne Anmeldung nutzbar. Die Berechnung
+           läuft direkt in deinem Browser.</p>
+      </details>
+
+      <details>
+        <summary>Wie viel Maut kostet ein 40-Tonner pro Kilometer?</summary>
+        <p>Ein 40-Tonnen-Sattelzug mit 5&nbsp;Achsen (Euro&nbsp;VI, CO₂-Klasse&nbsp;1) zahlt
+           34,8&nbsp;ct pro mautpflichtigem Kilometer. Bei besseren CO₂-Klassen sinkt der Satz.</p>
+      </details>
+
+      <details>
+        <summary>Welche Straßen sind mautpflichtig?</summary>
+        <p>Alle Bundesautobahnen und alle Bundesstraßen in Deutschland. Innerorts sowie auf
+           Land-, Kreis- und Gemeindestraßen fällt keine Maut an.</p>
+      </details>
+
+      <details>
+        <summary>Ab welchem Gewicht muss ich Maut zahlen?</summary>
+        <p>Seit dem 1.&nbsp;Juli 2024 ab 3,5&nbsp;Tonnen technisch zulässigem Gesamtgewicht,
+           mit einer Ausnahme für bestimmte Handwerkerfahrzeuge.</p>
+      </details>
+
+      <details>
+        <summary>Wie genau ist die Maut-Berechnung?</summary>
+        <p>Die Berechnung basiert auf einer LKW-Route (OpenStreetMap/Valhalla) und den amtlichen
+           Sätzen aus Anlage&nbsp;1 BFStrMG. Geringfügige Abweichungen zur endgültigen
+           Toll-Collect-Abrechnung sind möglich; die Angabe erfolgt ohne Gewähr.</p>
+      </details>
+
+      <details>
+        <summary>Sind Elektro-Lkw von der Maut befreit?</summary>
+        <p>Emissionsfreie Lkw sind bis Ende&nbsp;2025 vollständig befreit. Ab 2026 zahlen sie
+           einen reduzierten Mautanteil.</p>
+      </details>
+    </section>
+
+    <footer class="site-footer">
+      <p>Kostenloser Lkw-Maut-Rechner für Deutschland · Routing: OpenStreetMap &amp; Valhalla ·
+         Mautsätze: Anlage&nbsp;1 BFStrMG (Stand 2026). Alle Angaben ohne Gewähr.</p>
+    </footer>
+  </article>
+
+  <!-- Structured Data: FAQ -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      { "@type": "Question", "name": "Ist dieser Lkw-Maut-Rechner wirklich kostenlos?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Ja. Der Rechner ist vollständig kostenlos und ohne Anmeldung nutzbar. Die Berechnung läuft direkt im Browser." } },
+      { "@type": "Question", "name": "Wie viel Maut kostet ein 40-Tonner pro Kilometer?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Ein 40-Tonnen-Sattelzug mit 5 Achsen (Euro VI, CO2-Klasse 1) zahlt 34,8 ct pro mautpflichtigem Kilometer. Bei besseren CO2-Klassen sinkt der Satz." } },
+      { "@type": "Question", "name": "Welche Straßen sind mautpflichtig?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Alle Bundesautobahnen und alle Bundesstraßen in Deutschland. Innerorts sowie auf Land-, Kreis- und Gemeindestraßen fällt keine Maut an." } },
+      { "@type": "Question", "name": "Ab welchem Gewicht muss ich Maut zahlen?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Seit dem 1. Juli 2024 ab 3,5 Tonnen technisch zulässigem Gesamtgewicht, mit einer Ausnahme für bestimmte Handwerkerfahrzeuge." } },
+      { "@type": "Question", "name": "Wie genau ist die Maut-Berechnung?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Die Berechnung basiert auf einer LKW-Route (OpenStreetMap/Valhalla) und den amtlichen Sätzen aus Anlage 1 BFStrMG. Geringfügige Abweichungen zur Toll-Collect-Abrechnung sind möglich; ohne Gewähr." } },
+      { "@type": "Question", "name": "Sind Elektro-Lkw von der Maut befreit?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Emissionsfreie Lkw sind bis Ende 2025 vollständig befreit. Ab 2026 zahlen sie einen reduzierten Mautanteil." } }
+    ]
+  }
+  </script>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="rates.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
