@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 236 48" role="img" aria-label="mautcheck24">
+  <defs>
+    <linearGradient id="mc" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2f6fe4"/>
+      <stop offset="1" stop-color="#1d4ed8"/>
+    </linearGradient>
+  </defs>
+  <rect x="1" y="1" width="46" height="46" rx="13" fill="url(#mc)"/>
+  <path d="M13 25.5l6.5 6.5L35 14.5" fill="none" stroke="#fff" stroke-width="5"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="58" y="33" font-family="Inter, 'Segoe UI', Arial, sans-serif"
+        font-size="27" font-weight="800" letter-spacing="-1">
+    <tspan fill="#0f295e">mautcheck</tspan><tspan fill="#2563eb">24</tspan>
+  </text>
+</svg>

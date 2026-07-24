@@ -42,11 +42,21 @@ body {
 #panel::-webkit-scrollbar { width: 8px; }
 #panel::-webkit-scrollbar-thumb { background: #d7deeb; border-radius: 8px; }
 
-header h1 {
-  font-size: clamp(1.3rem, 1rem + 1.4vw, 1.6rem); font-weight: 800;
-  color: var(--brand-deep); letter-spacing: -.02em; line-height: 1.2;
+.brand {
+  display: inline-flex; align-items: center; gap: 11px; text-decoration: none;
+  margin-bottom: 16px;
 }
-header .sub { color: var(--muted); font-size: .84rem; margin: 8px 0 22px; }
+.brand-mark { width: 40px; height: 40px; display: block; flex-shrink: 0; }
+.brand-name {
+  font-size: 1.42rem; font-weight: 800; letter-spacing: -.03em; color: var(--brand-deep);
+}
+.brand-24 { color: var(--brand); }
+
+header h1 {
+  font-size: clamp(1.05rem, .9rem + .7vw, 1.24rem); font-weight: 700;
+  color: var(--text); letter-spacing: -.01em; line-height: 1.25;
+}
+header .sub { color: var(--muted); font-size: .84rem; margin: 6px 0 22px; }
 
 /* ===== Formularfelder ===== */
 .field { margin-bottom: 16px; position: relative; }
