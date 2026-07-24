@@ -221,6 +221,15 @@ const fmtH = (x) => { const hh = Math.floor(x), mm = Math.round((x - hh) * 60);
 
 $("go").addEventListener("click", calc);
 document.addEventListener("keydown", (e) => { if (e.key === "Enter") calc(); });
+$("share-print").addEventListener("click", () => window.print());
+$("share-copy").addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText(buildShareUrl());
+    $("share-status").textContent = "Link wurde kopiert.";
+  } catch {
+    $("share-status").textContent = "Link konnte nicht kopiert werden.";
+  }
+});
 
 // Start und Ziel tauschen (Werte + hinterlegte Koordinaten); bei sichtbarer Route neu rechnen
 $("swap").addEventListener("click", () => {
@@ -323,6 +332,8 @@ async function calc() {
     $("r-free").textContent = fmtKm(main.kmFree);
 
     $("result").hidden = false;
+    updateShareLinks();
+    history.replaceState(null, "", buildShareUrl());
     status.textContent = "";
   } catch (err) {
     status.className = "";
@@ -331,3 +342,28 @@ async function calc() {
     btn.disabled = false;
   }
 }
+
+function buildShareUrl() {
+  const url = new URL(location.origin + location.pathname);
+  url.searchParams.set("start", $("start").value.trim());
+  url.searchParams.set("ziel", $("dest").value.trim());
+  url.searchParams.set("fahrzeug", vehicleSel.value);
+  url.searchParams.set("co2", $("co2").value);
+  return url.toString();
+}
+
+function updateShareLinks() {
+  const url = buildShareUrl();
+  const text = `Meine Lkw-Mautberechnung: ${$("r-toll").textContent} für ${$("start").value.trim()} – ${$("dest").value.trim()}`;
+  $("share-whatsapp").href = `https://wa.me/?text=${encodeURIComponent(`${text}\n${url}`)}`;
+  $("share-email").href = `mailto:?subject=${encodeURIComponent("Lkw-Mautberechnung")}&body=${encodeURIComponent(`${text}\n\n${url}`)}`;
+  $("share-status").textContent = "";
+}
+
+// Vorbelegung für Landingpages und teilbare Links. Nur bekannte Presets übernehmen.
+const initialParams = new URLSearchParams(location.search);
+if (initialParams.has("start")) $("start").value = initialParams.get("start").slice(0, 200);
+if (initialParams.has("ziel")) $("dest").value = initialParams.get("ziel").slice(0, 200);
+if (VEHICLES[initialParams.get("fahrzeug")]) vehicleSel.value = initialParams.get("fahrzeug");
+if (["1", "2", "3", "4", "5"].includes(initialParams.get("co2"))) $("co2").value = initialParams.get("co2");
+if ($("start").value && $("dest").value) calc();

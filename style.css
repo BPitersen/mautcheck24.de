@@ -163,6 +163,14 @@ header .sub { color: var(--muted); font-size: .84rem; margin: 8px 0 22px; }
 .dot.ab { background: var(--accent-ab); }
 .dot.bs { background: var(--accent-bs); }
 .dot.free { background: var(--brand); }
+.share-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 18px; }
+.share-actions button, .share-actions a {
+  border: 1px solid var(--border-strong); border-radius: 8px; background: #fff;
+  color: var(--brand-dark); font: 600 .78rem/1.2 inherit; padding: 9px 8px;
+  text-align: center; text-decoration: none; cursor: pointer;
+}
+.share-actions button:hover, .share-actions a:hover { background: #eef4ff; border-color: var(--brand); }
+.share-status { min-height: 1.2em; margin-top: 7px; color: var(--muted); font-size: .72rem; text-align: center; }
 
 /* ===== Karte ===== */
 #map {
@@ -298,4 +306,12 @@ table.rates td b { color: var(--brand); font-weight: 800; }
 @media (max-width: 380px) {
   .stats { flex-wrap: wrap; }
   .stat { min-width: calc(50% - 5px); }
+}
+
+@media print {
+  .topbar, #map, #go, .swap-btn, .suggestions, .share-actions, .related, .content { display: none !important; }
+  .hero { display: block; height: auto; min-height: 0; padding: 0; background: #fff; }
+  #panel { width: 100%; height: auto; overflow: visible; border: 0; box-shadow: none; }
+  #panel > :not(header):not(#result) { display: none; }
+  #result { display: block !important; }
 }

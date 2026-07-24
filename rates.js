@@ -26,6 +26,9 @@ const VEHICLES = {
 };
 
 function tollRate(vehicleKey, co2Class) {
+  // Emissionsfreie schwere Nutzfahrzeuge (CO₂-Klasse 5) sind nach § 1 Abs. 2
+  // Satz 1 Nr. 7 BFStrMG bis einschließlich 30. Juni 2031 mautbefreit.
+  if (String(co2Class) === "5") return 0;
   return RATES.infra[vehicleKey] + RATES.air[vehicleKey] +
          RATES.noise[vehicleKey] + RATES.co2[co2Class][vehicleKey];
 }

@@ -118,7 +118,7 @@
             <option value="5">Klasse 5 – emissionsfrei*</option>
           </select>
         </div>
-        <p class="note">*E-Lkw: Sonderregeln ab 2026, Wert ist Näherung. Emissionsklasse Euro VI vorausgesetzt.</p>
+        <p class="note">*Emissionsfreie schwere Nutzfahrzeuge sind nach aktuellem BFStrMG bis 30. Juni 2031 mautbefreit. Emissionsklasse Euro VI vorausgesetzt.</p>
       </details>
 
       <button id="go">Route &amp; Maut berechnen</button>
@@ -143,6 +143,13 @@
         </table>
         <p class="note">Routing: OpenStreetMap/Valhalla · Mautsätze: BFStrMG Anlage&nbsp;1.
           Ohne Gewähr – geringfügige Abweichungen zur amtlichen Toll-Collect-Abrechnung möglich.</p>
+        <div class="share-actions" aria-label="Ergebnis teilen">
+          <button type="button" id="share-copy">Link kopieren</button>
+          <a id="share-whatsapp" href="#" target="_blank" rel="noopener">WhatsApp</a>
+          <a id="share-email" href="#">E-Mail</a>
+          <button type="button" id="share-print">Drucken</button>
+        </div>
+        <p id="share-status" class="share-status" role="status" aria-live="polite"></p>
       </div>
     </aside>
 
@@ -195,7 +202,8 @@
     <p class="small">
       Alle Angaben in ct/km. Ein <strong>40-Tonnen-Sattelzug (5&nbsp;Achsen)</strong> zahlt damit
       34,8&nbsp;ct pro mautpflichtigem Kilometer. Bei besseren CO₂-Klassen (2–5) sinkt der
-      CO₂-Anteil deutlich, emissionsfreie Lkw sind bis Ende&nbsp;2025 ganz befreit.
+      CO₂-Anteil deutlich; emissionsfreie schwere Nutzfahrzeuge sind nach aktuellem BFStrMG bis
+      30.&nbsp;Juni&nbsp;2031 ganz befreit.
     </p>
 
     <h2>Welche Straßen sind in Deutschland mautpflichtig?</h2>
@@ -210,7 +218,7 @@
     <h2>Ab welchem Gewicht gilt die Lkw-Maut?</h2>
     <p>
       Seit dem <strong>1.&nbsp;Juli 2024</strong> gilt die Maut bereits ab
-      <strong>3,5&nbsp;Tonnen</strong> technisch zulässigem Gesamtgewicht. Für bestimmte
+      <strong>mehr als 3,5&nbsp;Tonnen</strong> technisch zulässigem Gesamtgewicht. Für bestimmte
       Handwerker­fahrzeuge gibt es eine Ausnahme. Zuvor lag die Grenze bei 7,5&nbsp;Tonnen.
     </p>
 
@@ -247,7 +255,7 @@
 
       <details>
         <summary>Ab welchem Gewicht muss ich Maut zahlen?</summary>
-        <p>Seit dem 1.&nbsp;Juli 2024 ab 3,5&nbsp;Tonnen technisch zulässigem Gesamtgewicht,
+        <p>Seit dem 1.&nbsp;Juli 2024 bei mehr als 3,5&nbsp;Tonnen technisch zulässigem Gesamtgewicht,
            mit einer Ausnahme für bestimmte Handwerkerfahrzeuge.</p>
       </details>
 
@@ -260,8 +268,8 @@
 
       <details>
         <summary>Sind Elektro-Lkw von der Maut befreit?</summary>
-        <p>Emissionsfreie Lkw sind bis Ende&nbsp;2025 vollständig befreit. Ab 2026 zahlen sie
-           einen reduzierten Mautanteil.</p>
+        <p>Emissionsfreie schwere Nutzfahrzeuge sind nach aktuellem BFStrMG bis
+           30.&nbsp;Juni&nbsp;2031 vollständig befreit.</p>
       </details>
     </section>
 
@@ -311,11 +319,11 @@
       { "@type": "Question", "name": "Welche Straßen sind mautpflichtig?",
         "acceptedAnswer": { "@type": "Answer", "text": "Alle Bundesautobahnen und alle Bundesstraßen in Deutschland. Innerorts sowie auf Land-, Kreis- und Gemeindestraßen fällt keine Maut an." } },
       { "@type": "Question", "name": "Ab welchem Gewicht muss ich Maut zahlen?",
-        "acceptedAnswer": { "@type": "Answer", "text": "Seit dem 1. Juli 2024 ab 3,5 Tonnen technisch zulässigem Gesamtgewicht, mit einer Ausnahme für bestimmte Handwerkerfahrzeuge." } },
+        "acceptedAnswer": { "@type": "Answer", "text": "Seit dem 1. Juli 2024 bei mehr als 3,5 Tonnen technisch zulässigem Gesamtgewicht, mit einer Ausnahme für bestimmte Handwerkerfahrzeuge." } },
       { "@type": "Question", "name": "Wie genau ist die Maut-Berechnung?",
         "acceptedAnswer": { "@type": "Answer", "text": "Die Berechnung basiert auf einer LKW-Route (OpenStreetMap/Valhalla) und den amtlichen Sätzen aus Anlage 1 BFStrMG. Geringfügige Abweichungen zur Toll-Collect-Abrechnung sind möglich; ohne Gewähr." } },
       { "@type": "Question", "name": "Sind Elektro-Lkw von der Maut befreit?",
-        "acceptedAnswer": { "@type": "Answer", "text": "Emissionsfreie Lkw sind bis Ende 2025 vollständig befreit. Ab 2026 zahlen sie einen reduzierten Mautanteil." } }
+        "acceptedAnswer": { "@type": "Answer", "text": "Emissionsfreie schwere Nutzfahrzeuge sind nach aktuellem BFStrMG bis 30. Juni 2031 vollständig befreit." } }
     ]
   }
   </script>
