@@ -222,6 +222,14 @@ const fmtH = (x) => { const hh = Math.floor(x), mm = Math.round((x - hh) * 60);
 $("go").addEventListener("click", calc);
 document.addEventListener("keydown", (e) => { if (e.key === "Enter") calc(); });
 
+// Start und Ziel tauschen (Werte + hinterlegte Koordinaten); bei sichtbarer Route neu rechnen
+$("swap").addEventListener("click", () => {
+  const si = $("start"), di = $("dest");
+  [si.value, di.value] = [di.value, si.value];
+  [startState.coord, destState.coord] = [destState.coord, startState.coord];
+  if (!$("result").hidden) calc();
+});
+
 async function calc() {
   const status = $("status");
   const btn = $("go");

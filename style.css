@@ -60,6 +60,18 @@ header h1 {
 header .sub { color: var(--muted); font-size: .84rem; margin: 8px 0 22px; }
 
 /* ===== Formularfelder ===== */
+.od-fields { position: relative; }
+.swap-btn {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--border-strong);
+  background: #fff; color: var(--brand); cursor: pointer; z-index: 6;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: var(--shadow-sm); transition: background .12s, transform .12s, border-color .12s;
+}
+.swap-btn:hover { background: #eef4ff; border-color: var(--brand); }
+.swap-btn:active { transform: translateY(-50%) scale(.9); }
+.swap-btn:focus-visible { outline: none; box-shadow: var(--ring); }
+
 .field { margin-bottom: 16px; position: relative; }
 .field label {
   display: block; font-size: .76rem; font-weight: 600; color: #46506a;

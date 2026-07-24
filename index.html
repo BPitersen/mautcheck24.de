@@ -79,16 +79,26 @@
         <p class="sub">Kostenlos Route &amp; Maut berechnen · Sätze nach BFStrMG (Stand 2026)</p>
       </header>
 
-      <div class="field autocomplete">
-        <label for="start">Start</label>
-        <input id="start" type="text" placeholder="Adresse oder Ort" autocomplete="off">
-        <div class="suggestions" id="start-sug"></div>
-      </div>
+      <div class="od-fields">
+        <div class="field autocomplete">
+          <label for="start">Start</label>
+          <input id="start" type="text" placeholder="Adresse oder Ort" autocomplete="off">
+          <div class="suggestions" id="start-sug"></div>
+        </div>
 
-      <div class="field autocomplete">
-        <label for="dest">Ziel</label>
-        <input id="dest" type="text" placeholder="Adresse oder Ort" autocomplete="off">
-        <div class="suggestions" id="dest-sug"></div>
+        <button type="button" id="swap" class="swap-btn" title="Start und Ziel tauschen"
+                aria-label="Start und Ziel tauschen">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M7 4v16M7 4L4 7M7 4l3 3M17 20V4M17 20l-3-3M17 20l3-3"/>
+          </svg>
+        </button>
+
+        <div class="field autocomplete">
+          <label for="dest">Ziel</label>
+          <input id="dest" type="text" placeholder="Adresse oder Ort" autocomplete="off">
+          <div class="suggestions" id="dest-sug"></div>
+        </div>
       </div>
 
       <div class="field">
