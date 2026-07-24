@@ -96,21 +96,36 @@ const havKm = ([la1, lo1], [la2, lo2]) => {
   return 12742 * Math.asin(Math.sqrt(h));
 };
 
-function fetchRoute(a, b, veh) {
-  return valhalla("/route", {
+function fetchRoute(a, b, veh, excludePolygons) {
+  const req = {
     locations: [{ lat: a.lat, lon: a.lon }, { lat: b.lat, lon: b.lon }],
     costing: "truck",
     costing_options: { truck: {
       weight: veh.weight, axle_count: veh.axles,
       height: veh.height, width: 2.55, length: veh.length,
-      // Feldwege (highway=track), Wohnstraßen-Durchfahrten und Erschließungswege meiden,
-      // damit die klassifizierte Straße (tertiary/secondary/primary/motorway) bevorzugt wird.
-      // Hinweis: harte Anfahrt zum Start/Ziel bleibt möglich (letzte Meile).
+      // Feldwege (highway=track), Wohnstraßen-Durchfahrten und Erschließungswege meiden.
       use_tracks: 0, use_living_streets: 0, service_penalty: 100, service_factor: 1.5,
     } },
     units: "kilometers",
     alternates: 2,
-  });
+  };
+  if (excludePolygons && excludePolygons.length) {
+    req.exclude_polygons = excludePolygons;
+    req.alternates = 0;
+  }
+  return valhalla("/route", req);
+}
+
+// Kleine Sperrflächen um die Mittelpunkte enger Nebenstraßen (für die Umleitung).
+function buildExcludePolys(points) {
+  const step = Math.max(1, Math.ceil(points.length / 18)); // max ~18 Polygone
+  const d = 0.0011; // ~120 m Kantenlänge
+  const polys = [];
+  for (let i = 0; i < points.length; i += step) {
+    const [la, lo] = points[i];
+    polys.push([[lo - d, la - d], [lo + d, la - d], [lo + d, la + d], [lo - d, la + d], [lo - d, la - d]]);
+  }
+  return polys;
 }
 
 // Route analysieren: Kanten klassifizieren (Autobahn / Bundesstraße / mautfrei)
@@ -130,6 +145,9 @@ async function analyzeTrip(trip) {
   if (cur.length > 1) chunks.push(cur);
 
   let kmAb = 0, kmBs = 0, kmFree = 0, driveH = 0, minorKm = 0;
+  let cumKm = 0, throughMinorKm = 0;
+  const throughMinor = [];
+  const totalKm = trip.summary.length;
   const MINOR = ["unclassified", "residential", "service", "track", "living_street"];
   const segments = { ab: [], bs: [], free: [] };
   for (const chunk of chunks) {
@@ -148,14 +166,23 @@ async function analyzeTrip(trip) {
       if (kind === "ab") kmAb += e.length;
       else if (kind === "bs") kmBs += e.length;
       else kmFree += e.length;
-      if (MINOR.includes(e.road_class)) minorKm += e.length;
+      const isMinor = MINOR.includes(e.road_class);
+      if (isMinor) minorKm += e.length;
       const truckSpeed = Math.min(e.speed || 50, isAb ? 90 : 60);
       driveH += e.length / truckSpeed;
       const pts = taShape.slice(e.begin_shape_index, e.end_shape_index + 1);
       if (pts.length > 1) segments[kind].push(pts);
+      // durchgehende Nebenstraßen (ohne erste/letzte Meile) für die Umleitung merken
+      const midCum = cumKm + e.length / 2;
+      cumKm += e.length;
+      if (isMinor && pts.length && midCum > 1.5 && midCum < totalKm - 1.5) {
+        throughMinorKm += e.length;
+        throughMinor.push(pts[Math.floor(pts.length / 2)]);
+      }
     }
   }
-  return { shape, kmAb, kmBs, kmFree, driveH, minorKm, segments, km: trip.summary.length };
+  return { shape, kmAb, kmBs, kmFree, driveH, minorKm, throughMinorKm, throughMinor,
+    segments, km: trip.summary.length };
 }
 
 // ---------- Hauptlogik ----------
@@ -195,23 +222,30 @@ async function calc() {
     status.textContent = "Analysiere Route …";
     let main = await analyzeTrip(mainRes.trip);
 
-    // Nutzt die schnellste Route auffällig viel Nebenstraße (unclassified/residential/…)?
-    // Dann Alternativen prüfen und die straßenklassen-beste wählen: wenigste Nebenstraßen-km
-    // bei vergleichbarer Fahrzeit (max. +25 %). Verhindert enge Abkürzungen als Durchfahrt,
-    // lässt aber die letzte Meile zum Start/Ziel offen.
-    const alts = mainRes.alternates || [];
-    if (alts.length && main.minorKm > Math.max(3, 0.06 * main.km)) {
-      status.textContent = "Prüfe besser ausgebaute Alternativen …";
-      const candidates = [main];
-      for (const alt of alts) candidates.push(await analyzeTrip(alt.trip));
-      const minTime = Math.min(...candidates.map((c) => c.driveH));
-      main = candidates
-        .filter((c) => c.driveH <= minTime * 1.25)
-        .reduce((best, c) => {
-          if (c.minorKm < best.minorKm - 0.5) return c;      // deutlich weniger Nebenstraße
-          if (best.minorKm < c.minorKm - 0.5) return best;
-          return c.driveH < best.driveH ? c : best;          // bei Gleichstand: schneller
-        });
+    // Läuft die schnellste Route als Durchfahrt über enge Nebenstraßen (nicht nur letzte Meile)?
+    if (main.throughMinorKm > 0.8) {
+      status.textContent = "Suche Route über größer ausgebaute Straßen …";
+      // 1) Alternativen ansehen und die mit den wenigsten durchgehenden Nebenstraßen wählen
+      const cands = [main];
+      for (const alt of (mainRes.alternates || [])) cands.push(await analyzeTrip(alt.trip));
+      const minTime = Math.min(...cands.map((c) => c.driveH));
+      main = cands
+        .filter((c) => c.driveH <= minTime * 1.3)
+        .reduce((best, c) =>
+          c.throughMinorKm < best.throughMinorKm - 0.3 ? c
+            : best.throughMinorKm < c.throughMinorKm - 0.3 ? best
+            : c.driveH < best.driveH ? c : best);
+
+      // 2) Immer noch enge Durchfahrten? Diese Korridore sperren und über große Straßen umleiten.
+      if (main.throughMinorKm > 0.8) {
+        const polys = buildExcludePolys([].concat(...cands.map((c) => c.throughMinor)));
+        try {
+          const cand = await analyzeTrip((await fetchRoute(a, b, veh, polys)).trip);
+          if (cand.throughMinorKm < main.throughMinorKm - 0.5 && cand.driveH <= minTime * 1.7) {
+            main = cand;
+          }
+        } catch (e) { /* Sperrung nicht umfahrbar -> beste bisherige Route behalten */ }
+      }
     }
     main.toll = (main.kmAb + main.kmBs) * rate;
 
