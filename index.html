@@ -82,8 +82,15 @@
       <div class="od-fields">
         <div class="field autocomplete">
           <label for="start">Start</label>
-          <input id="start" type="text" placeholder="Adresse oder Ort" autocomplete="off">
-          <div class="suggestions" id="start-sug"></div>
+          <div class="address-input">
+            <input id="start" type="text" placeholder="Adresse oder Ort" autocomplete="off"
+                   aria-describedby="start-help" aria-expanded="false" aria-controls="start-sug">
+            <span class="address-valid" aria-hidden="true">✓</span>
+            <button type="button" class="address-search" id="start-search"
+                    aria-label="Startadresse suchen" title="Startadresse suchen">⌕</button>
+          </div>
+          <p class="address-help" id="start-help">Tippen für Vorschläge · Enter für genaue Suche</p>
+          <div class="suggestions" id="start-sug" role="listbox" aria-label="Startadressen"></div>
         </div>
 
         <button type="button" id="swap" class="swap-btn" title="Start und Ziel tauschen"
@@ -96,8 +103,15 @@
 
         <div class="field autocomplete">
           <label for="dest">Ziel</label>
-          <input id="dest" type="text" placeholder="Adresse oder Ort" autocomplete="off">
-          <div class="suggestions" id="dest-sug"></div>
+          <div class="address-input">
+            <input id="dest" type="text" placeholder="Adresse oder Ort" autocomplete="off"
+                   aria-describedby="dest-help" aria-expanded="false" aria-controls="dest-sug">
+            <span class="address-valid" aria-hidden="true">✓</span>
+            <button type="button" class="address-search" id="dest-search"
+                    aria-label="Zieladresse suchen" title="Zieladresse suchen">⌕</button>
+          </div>
+          <p class="address-help" id="dest-help">Tippen für Vorschläge · Enter für genaue Suche</p>
+          <div class="suggestions" id="dest-sug" role="listbox" aria-label="Zieladressen"></div>
         </div>
       </div>
 

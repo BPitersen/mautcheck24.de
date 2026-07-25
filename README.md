@@ -15,6 +15,7 @@ Fahrzeug-, Routen-, Autobahn- und Handwerkerseiten werden zentral durch
 ```bash
 node scripts/generate-seo-pages.mjs
 node scripts/enhance-seo.mjs
+node scripts/generate-co2-page.mjs
 ```
 
 Der Generator aktualisiert auch `sitemap.xml`. Die erzeugten HTML-Dateien werden

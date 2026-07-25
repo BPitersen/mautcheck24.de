@@ -91,18 +91,52 @@ header .sub { color: var(--muted); font-size: .84rem; margin: 8px 0 22px; }
   background-repeat: no-repeat; background-position: right 14px center; padding-right: 38px;
 }
 
+.address-input { position: relative; }
+.address-input input { padding-right: 76px; }
+.address-search {
+  position: absolute; top: 50%; right: 5px; transform: translateY(-50%);
+  width: 34px; height: 34px; border: 0; border-radius: 7px; background: #edf3ff;
+  color: var(--brand-dark); font: 700 1.35rem/1 inherit; cursor: pointer;
+}
+.address-search:hover { background: #dfeaff; }
+.address-search:focus-visible { outline: none; box-shadow: var(--ring); }
+.address-search:disabled { cursor: wait; opacity: .65; }
+.address-valid {
+  display: none; position: absolute; right: 44px; top: 50%; transform: translateY(-50%);
+  width: 22px; height: 22px; border-radius: 50%; background: #16834a; color: #fff;
+  font-size: .76rem; font-weight: 800; line-height: 22px; text-align: center;
+}
+.autocomplete.is-valid .address-valid { display: block; }
+.autocomplete.is-loading .address-search { animation: searchPulse .8s ease-in-out infinite alternate; }
+@keyframes searchPulse { to { opacity: .4; } }
+.address-help { margin: 5px 2px 0; color: var(--muted); font-size: .68rem; line-height: 1.35; }
+.autocomplete.is-valid .address-help { color: #147a46; }
+
 .autocomplete .suggestions {
-  position: absolute; top: 100%; left: 0; right: 0; background: #fff; z-index: 1100;
+  position: absolute; top: calc(100% - 2px); left: 0; right: 0; background: #fff; z-index: 1100;
   border: 1px solid var(--border-strong); border-radius: var(--radius-sm); margin-top: 6px;
-  overflow: hidden; box-shadow: var(--shadow-lg); display: none;
+  overflow: hidden; box-shadow: var(--shadow-lg); display: none; max-height: 260px; overflow-y: auto;
 }
 .autocomplete .suggestions.open { display: block; }
-.autocomplete .suggestions div {
-  padding: 11px 14px; font-size: .85rem; cursor: pointer; transition: background .12s;
-  border-bottom: 1px solid #f0f3f9;
+.suggestion-option {
+  display: block; width: 100%; padding: 10px 13px; border: 0; border-bottom: 1px solid #f0f3f9;
+  background: #fff; color: var(--text); text-align: left; cursor: pointer; font-family: inherit;
 }
-.autocomplete .suggestions div:last-child { border-bottom: none; }
-.autocomplete .suggestions div:hover { background: #eef4ff; }
+.suggestion-option:last-child { border-bottom: none; }
+.suggestion-option:hover, .suggestion-option.active { background: #eef4ff; }
+.suggestion-option strong, .suggestion-option span { display: block; }
+.suggestion-option strong { font-size: .84rem; line-height: 1.3; }
+.suggestion-option span { margin-top: 3px; color: var(--muted); font-size: .72rem; line-height: 1.3; }
+
+.location-pin { background: transparent; border: 0; }
+.location-pin span {
+  display: grid; place-items: center; width: 30px; height: 30px; border: 3px solid #fff;
+  border-radius: 50% 50% 50% 0; transform: rotate(-45deg);
+  color: #fff; font: 800 .75rem/1 inherit; box-shadow: 0 3px 9px rgba(15,41,94,.35);
+}
+.location-pin b { transform: rotate(45deg); font: inherit; }
+.location-pin.start span { background: var(--brand); }
+.location-pin.dest span { background: var(--accent-ab); }
 
 .advanced { margin-bottom: 18px; }
 .advanced summary {

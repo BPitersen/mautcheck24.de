@@ -1,5 +1,6 @@
 const VALHALLA = "https://valhalla1.openstreetmap.de";
 const NOMINATIM = "https://nominatim.openstreetmap.org/search";
+const PHOTON = "https://photon.komoot.io/api/";
 const B_REF = /^B\s?\d+/;
 
 // ---------- Karte ----------
@@ -8,6 +9,7 @@ L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
 }).addTo(map);
 let routeLayer = L.layerGroup().addTo(map);
+let selectionLayer = L.layerGroup().addTo(map);
 let constrLayer = L.layerGroup().addTo(map);
 const constrIcon = L.divIcon({ className: "constr-icon", html: "🚧", iconSize: [22, 22], iconAnchor: [11, 11] });
 
@@ -21,48 +23,258 @@ for (const [key, v] of Object.entries(VEHICLES)) {
 }
 vehicleSel.value = "a5";
 
-// ---------- Adress-Autocomplete (Nominatim) ----------
-function setupAutocomplete(inputId, sugId) {
+// ---------- Adresssuche (explizit, Nominatim-konform) ----------
+const geocodeCache = new Map();
+const autocompleteCache = new Map();
+let geocodeQueue = Promise.resolve();
+let lastGeocodeAt = 0;
+let autocompleteQueue = Promise.resolve();
+let lastAutocompleteAt = 0;
+
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+function searchAddress(q, limit = 5) {
+  const key = q.trim().toLocaleLowerCase("de-DE");
+  if (geocodeCache.has(key)) return Promise.resolve(geocodeCache.get(key).slice(0, limit));
+
+  const run = async () => {
+    const pause = Math.max(0, 1000 - (Date.now() - lastGeocodeAt));
+    if (pause) await wait(pause);
+    lastGeocodeAt = Date.now();
+    const url = `${NOMINATIM}?format=jsonv2&addressdetails=1&countrycodes=de&limit=${limit}&q=${encodeURIComponent(q)}`;
+    const res = await fetch(url, { headers: { "Accept-Language": "de" } });
+    if (!res.ok) throw new Error(`Adresssuche: HTTP ${res.status}`);
+    const hits = await res.json();
+    geocodeCache.set(key, hits);
+    return hits;
+  };
+  geocodeQueue = geocodeQueue.then(run, run);
+  return geocodeQueue;
+}
+
+function autocompleteAddress(q) {
+  const key = q.trim().toLocaleLowerCase("de-DE");
+  if (autocompleteCache.has(key)) return Promise.resolve(autocompleteCache.get(key));
+
+  const run = async () => {
+    const pause = Math.max(0, 750 - (Date.now() - lastAutocompleteAt));
+    if (pause) await wait(pause);
+    lastAutocompleteAt = Date.now();
+    const url = `${PHOTON}?q=${encodeURIComponent(q)}&lang=de&limit=5&countrycode=DE`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Autocomplete: HTTP ${res.status}`);
+    const data = await res.json();
+    const hits = (data.features || []).map((feature) => {
+      const p = feature.properties || {};
+      const [lon, lat] = feature.geometry?.coordinates || [];
+      const locality = p.city || p.locality || p.district || (p.type === "city" ? p.name : "") || p.county || "";
+      return {
+        lat, lon,
+        name: p.name,
+        display_name: [p.name, p.street, p.housenumber, p.postcode, locality, p.state, p.country]
+          .filter(Boolean).join(", "),
+        address: {
+          road: p.street || (p.type === "street" ? p.name : ""),
+          house_number: p.housenumber,
+          postcode: p.postcode,
+          city: locality || (p.type === "city" ? p.name : ""),
+          state: p.state,
+        },
+      };
+    }).filter((hit) => Number.isFinite(hit.lat) && Number.isFinite(hit.lon));
+    autocompleteCache.set(key, hits);
+    return hits;
+  };
+  autocompleteQueue = autocompleteQueue.then(run, run);
+  return autocompleteQueue;
+}
+
+function addressParts(hit) {
+  const a = hit.address || {};
+  const locality = a.city || a.town || a.village || a.municipality || a.hamlet || "";
+  const street = [a.road || a.pedestrian, a.house_number].filter(Boolean).join(" ");
+  const primary = street || locality || hit.name || hit.display_name.split(",")[0];
+  const secondary = [...new Set([a.postcode, locality !== primary ? locality : "", a.state].filter(Boolean))].join(" · ");
+  const locationLine = [a.postcode, locality].filter(Boolean).join(" ");
+  const value = street
+    ? [primary, locationLine].filter(Boolean).join(", ")
+    : [primary, a.postcode].filter(Boolean).join(", ");
+  return { primary, secondary, value };
+}
+
+function locationIcon(label, kind) {
+  return L.divIcon({
+    className: `location-pin ${kind}`,
+    html: `<span><b>${label}</b></span>`,
+    iconSize: [30, 38],
+    iconAnchor: [15, 38],
+    popupAnchor: [0, -34],
+  });
+}
+
+function showSelectedLocations(focusState = null) {
+  selectionLayer.clearLayers();
+  const selected = [
+    { state: startState, label: "A", kind: "start", name: "Start" },
+    { state: destState, label: "B", kind: "dest", name: "Ziel" },
+  ].filter((item) => item.state.coord);
+  for (const item of selected) {
+    L.marker([item.state.coord.lat, item.state.coord.lon], { icon: locationIcon(item.label, item.kind) })
+      .addTo(selectionLayer).bindPopup(`<b>${item.name}</b><br>${item.state.label || ""}`);
+  }
+  if (selected.length === 2) {
+    map.fitBounds(L.latLngBounds(selected.map((item) => [item.state.coord.lat, item.state.coord.lon])), {
+      padding: [60, 60], maxZoom: 12,
+    });
+  } else if (focusState?.coord) {
+    map.flyTo([focusState.coord.lat, focusState.coord.lon], 12, {
+      animate: !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    });
+  }
+}
+
+function setupAddressSearch(inputId, sugId, searchId, helpId) {
   const input = document.getElementById(inputId);
   const sug = document.getElementById(sugId);
-  const state = { coord: null };
-  let timer = null;
+  const searchBtn = document.getElementById(searchId);
+  const help = document.getElementById(helpId);
+  const field = input.closest(".autocomplete");
+  const state = { coord: null, label: "" };
+  let activeIndex = -1;
+  let resultButtons = [];
+  let autocompleteTimer = null;
+  let searchVersion = 0;
 
   input.addEventListener("input", () => {
+    clearTimeout(autocompleteTimer);
+    const version = ++searchVersion;
     state.coord = null;
-    clearTimeout(timer);
+    state.label = "";
+    field.classList.remove("is-valid");
     const q = input.value.trim();
-    if (q.length < 3) { sug.classList.remove("open"); return; }
-    timer = setTimeout(async () => {
-      try {
-        const url = `${NOMINATIM}?format=jsonv2&countrycodes=de&limit=5&q=${encodeURIComponent(q)}`;
-        const res = await fetch(url, { headers: { "Accept-Language": "de" } });
-        const hits = await res.json();
-        sug.innerHTML = "";
-        for (const h of hits) {
-          const d = document.createElement("div");
-          d.textContent = h.display_name;
-          d.onclick = () => {
-            input.value = h.display_name.split(",").slice(0, 3).join(",");
-            state.coord = { lat: +h.lat, lon: +h.lon };
-            sug.classList.remove("open");
-          };
-          sug.appendChild(d);
+    help.textContent = q.length >= 3
+      ? "Vorschläge werden geladen …"
+      : "Mindestens 3 Zeichen eingeben";
+    closeSuggestions();
+    showSelectedLocations();
+    if (q.length >= 3) {
+      autocompleteTimer = setTimeout(async () => {
+        try {
+          const hits = await autocompleteAddress(q);
+          if (version !== searchVersion || input.value.trim() !== q) return;
+          renderHits(hits, false);
+        } catch {
+          if (version === searchVersion) help.textContent = "Keine Vorschläge · Enter für genaue Suche";
         }
-        sug.classList.toggle("open", hits.length > 0);
-      } catch { sug.classList.remove("open"); }
-    }, 350);
+      }, 350);
+    }
   });
-  input.addEventListener("blur", () => setTimeout(() => sug.classList.remove("open"), 250));
+
+  function closeSuggestions() {
+    sug.classList.remove("open");
+    input.setAttribute("aria-expanded", "false");
+    activeIndex = -1;
+    resultButtons = [];
+  }
+
+  function setActive(index) {
+    if (!resultButtons.length) return;
+    activeIndex = (index + resultButtons.length) % resultButtons.length;
+    resultButtons.forEach((button, i) => {
+      button.classList.toggle("active", i === activeIndex);
+      button.setAttribute("aria-selected", i === activeIndex ? "true" : "false");
+    });
+    resultButtons[activeIndex].scrollIntoView({ block: "nearest" });
+  }
+
+  function choose(hit) {
+    clearTimeout(autocompleteTimer);
+    searchVersion++;
+    const parts = addressParts(hit);
+    input.value = parts.value;
+    state.coord = { lat: +hit.lat, lon: +hit.lon };
+    state.label = [parts.primary, parts.secondary].filter(Boolean).join(", ");
+    field.classList.add("is-valid");
+    help.textContent = "Adresse erkannt und auf der Karte markiert";
+    closeSuggestions();
+    showSelectedLocations(state);
+  }
+
+  function renderHits(hits, chooseSingle) {
+    sug.innerHTML = "";
+    for (const hit of hits) {
+      const parts = addressParts(hit);
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "suggestion-option";
+      button.setAttribute("role", "option");
+      const primary = document.createElement("strong");
+      primary.textContent = parts.primary;
+      const secondary = document.createElement("span");
+      secondary.textContent = parts.secondary || "Deutschland";
+      button.append(primary, secondary);
+      button.addEventListener("mousedown", (event) => event.preventDefault());
+      button.addEventListener("click", () => choose(hit));
+      sug.appendChild(button);
+    }
+    resultButtons = [...sug.querySelectorAll(".suggestion-option")];
+    if (chooseSingle && resultButtons.length === 1) {
+      choose(hits[0]);
+    } else if (resultButtons.length) {
+      sug.classList.add("open");
+      input.setAttribute("aria-expanded", "true");
+      help.textContent = `${resultButtons.length} passende Adressen gefunden`;
+      setActive(0);
+    } else {
+      help.textContent = "Keine Adresse gefunden – ergänze Ort oder Postleitzahl";
+    }
+  }
+
+  async function runSearch() {
+    clearTimeout(autocompleteTimer);
+    searchVersion++;
+    const q = input.value.trim();
+    if (q.length < 3) {
+      help.textContent = "Bitte mindestens 3 Zeichen eingeben";
+      input.focus();
+      return;
+    }
+    searchBtn.disabled = true;
+    field.classList.add("is-loading");
+    help.textContent = "Adresse wird gesucht …";
+    closeSuggestions();
+    try {
+      const hits = await searchAddress(q);
+      renderHits(hits, true);
+    } catch {
+      help.textContent = "Adresssuche gerade nicht erreichbar – bitte erneut versuchen";
+    } finally {
+      searchBtn.disabled = false;
+      field.classList.remove("is-loading");
+    }
+  }
+
+  searchBtn.addEventListener("click", runSearch);
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowDown" && resultButtons.length) {
+      event.preventDefault(); setActive(activeIndex + 1);
+    } else if (event.key === "ArrowUp" && resultButtons.length) {
+      event.preventDefault(); setActive(activeIndex - 1);
+    } else if (event.key === "Escape") {
+      closeSuggestions();
+    } else if (event.key === "Enter") {
+      event.preventDefault();
+      if (activeIndex >= 0 && resultButtons[activeIndex]) resultButtons[activeIndex].click();
+      else runSearch();
+    }
+  });
+  input.addEventListener("blur", () => setTimeout(closeSuggestions, 250));
   return state;
 }
-const startState = setupAutocomplete("start", "start-sug");
-const destState = setupAutocomplete("dest", "dest-sug");
+const startState = setupAddressSearch("start", "start-sug", "start-search", "start-help");
+const destState = setupAddressSearch("dest", "dest-sug", "dest-search", "dest-help");
 
 async function geocodeFallback(q) {
-  const url = `${NOMINATIM}?format=jsonv2&countrycodes=de&limit=1&q=${encodeURIComponent(q)}`;
-  const res = await fetch(url, { headers: { "Accept-Language": "de" } });
-  const hits = await res.json();
+  const hits = await searchAddress(q, 1);
   if (!hits.length) throw new Error(`Adresse nicht gefunden: „${q}“`);
   return { lat: +hits[0].lat, lon: +hits[0].lon };
 }
@@ -220,7 +432,9 @@ const fmtH = (x) => { const hh = Math.floor(x), mm = Math.round((x - hh) * 60);
   return hh ? `${hh} h ${mm} min` : `${mm} min`; };
 
 $("go").addEventListener("click", calc);
-document.addEventListener("keydown", (e) => { if (e.key === "Enter") calc(); });
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.target.closest(".autocomplete")) calc();
+});
 $("share-print").addEventListener("click", () => window.print());
 $("edit-inputs").addEventListener("click", () => {
   $("panel").scrollTo({
@@ -243,6 +457,12 @@ $("swap").addEventListener("click", () => {
   const si = $("start"), di = $("dest");
   [si.value, di.value] = [di.value, si.value];
   [startState.coord, destState.coord] = [destState.coord, startState.coord];
+  [startState.label, destState.label] = [destState.label, startState.label];
+  si.closest(".autocomplete").classList.toggle("is-valid", !!startState.coord);
+  di.closest(".autocomplete").classList.toggle("is-valid", !!destState.coord);
+  $("start-help").textContent = startState.coord ? "Adresse erkannt und auf der Karte markiert" : "Tippen für Vorschläge · Enter für genaue Suche";
+  $("dest-help").textContent = destState.coord ? "Adresse erkannt und auf der Karte markiert" : "Tippen für Vorschläge · Enter für genaue Suche";
+  showSelectedLocations();
   if (!$("result").hidden) calc();
 });
 
@@ -262,6 +482,11 @@ async function calc() {
     status.textContent = "Suche Adressen …";
     const a = startState.coord || (await geocodeFallback(startQ));
     const b = destState.coord || (await geocodeFallback(destQ));
+    startState.coord = a; startState.label ||= startQ;
+    destState.coord = b; destState.label ||= destQ;
+    $("start").closest(".autocomplete").classList.add("is-valid");
+    $("dest").closest(".autocomplete").classList.add("is-valid");
+    showSelectedLocations();
 
     const veh = VEHICLES[vehicleSel.value];
     status.textContent = "Berechne Lkw-Route …";
@@ -312,8 +537,6 @@ async function calc() {
       L.polyline(pts, { color: "#e8641b", weight: 5, opacity: 0.95 }).addTo(routeLayer);
     for (const pts of main.segments.bs)
       L.polyline(pts, { color: "#e8a51b", weight: 5, opacity: 0.95 }).addTo(routeLayer);
-    L.marker([a.lat, a.lon]).addTo(routeLayer).bindPopup("Start");
-    L.marker([b.lat, b.lon]).addTo(routeLayer).bindPopup("Ziel");
     map.fitBounds(L.latLngBounds(main.shape), { padding: [40, 40] });
 
     // Baustellen im Ausschnitt nachladen (nicht-blockierend)
