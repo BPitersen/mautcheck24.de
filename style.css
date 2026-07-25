@@ -104,6 +104,7 @@ header .sub { color: var(--muted); font-size: .84rem; margin: 8px 0 22px; }
 .autocomplete.is-loading .address-search { animation: searchPulse .8s ease-in-out infinite alternate; }
 @keyframes searchPulse { to { opacity: .4; } }
 .address-help { margin: 5px 2px 0; color: var(--muted); font-size: .68rem; line-height: 1.35; }
+.address-help:empty { display: none; }
 .waypoint-field { padding-right: 38px; }
 .waypoint-remove {
   position: absolute; right: 0; top: 28px; width: 30px; height: 30px; border: 0;

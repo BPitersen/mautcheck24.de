@@ -290,7 +290,7 @@ function addWaypoint(value = "") {
       <button type="button" class="address-search" id="${id}-search"
               aria-label="Zwischenstopp suchen" title="Zwischenstopp suchen">⌕</button>
     </div>
-    <p class="address-help" id="${id}-help">Tippen für Vorschläge · Enter für genaue Suche</p>
+    <p class="address-help" id="${id}-help"></p>
     <div class="suggestions" id="${id}-sug" role="listbox" aria-label="Zwischenstopps"></div>
     <button type="button" class="waypoint-remove" aria-label="Zwischenstopp entfernen"
             title="Zwischenstopp entfernen">×</button>`;
@@ -512,8 +512,8 @@ $("swap").addEventListener("click", () => {
   [si.value, di.value] = [di.value, si.value];
   [startState.coord, destState.coord] = [destState.coord, startState.coord];
   [startState.label, destState.label] = [destState.label, startState.label];
-  $("start-help").textContent = startState.coord ? "" : "Tippen für Vorschläge · Enter für genaue Suche";
-  $("dest-help").textContent = destState.coord ? "" : "Tippen für Vorschläge · Enter für genaue Suche";
+  $("start-help").textContent = "";
+  $("dest-help").textContent = "";
   showSelectedLocations();
   if (!$("result").hidden) calc();
 });
