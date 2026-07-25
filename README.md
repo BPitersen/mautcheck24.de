@@ -16,11 +16,16 @@ Fahrzeug-, Routen-, Autobahn- und Handwerkerseiten werden zentral durch
 node scripts/generate-seo-pages.mjs
 node scripts/enhance-seo.mjs
 node scripts/generate-co2-page.mjs
+node scripts/fetch-route-data.mjs
+node scripts/generate-routing-seo.mjs
 ```
 
 Der Generator aktualisiert auch `sitemap.xml`. Die erzeugten HTML-Dateien werden
 mitcommittet, damit das statische Hosting keinen Build-Schritt benötigt.
 
 `scripts/fetch-route-data.mjs` aktualisiert die gespeicherten Routingwerte über
-Valhalla. Das Skript benötigt Netzwerkzugriff und sollte nur ausgeführt werden,
-wenn die Orientierungswerte neu berechnet werden sollen.
+Valhalla. Neben Entfernung und Fahrzeit werden Autobahn-, Bundesstraßen- und
+mautfreie Kilometer sowie Pausen und Beispielmaut berechnet. Das Skript benötigt
+Netzwerkzugriff und sollte nur ausgeführt werden, wenn die Orientierungswerte neu
+berechnet werden sollen. `generate-routing-seo.mjs` muss anschließend zuletzt
+laufen, weil es die detaillierten Routen-, Autobahn- und Übersichtsseiten erzeugt.

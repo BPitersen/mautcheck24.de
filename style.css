@@ -156,6 +156,20 @@ header .sub { color: var(--muted); font-size: .84rem; margin: 8px 0 22px; }
 .advanced summary::-webkit-details-marker { display: none; }
 .advanced summary::before { content: "⚙ "; }
 .advanced .field { margin-top: 10px; }
+.vehicle-dimensions { margin-top: 14px; padding: 0; border: 0; }
+.vehicle-dimensions legend {
+  margin-bottom: 9px; color: #46506a; font-size: .76rem; font-weight: 700;
+}
+.dimension-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+.dimension-grid label {
+  margin: 0; color: var(--muted); font-size: .7rem; font-weight: 600;
+}
+.dimension-grid label span {
+  display: flex; align-items: center; gap: 5px; margin-top: 4px; color: var(--muted);
+}
+.dimension-grid input {
+  min-width: 0; padding: 8px 9px; font-size: .82rem; text-align: right;
+}
 .note { font-size: .72rem; color: var(--muted); line-height: 1.5; margin-top: 8px; }
 
 /* ===== Button ===== */
@@ -335,6 +349,16 @@ table.rates td b { color: var(--brand); font-weight: 800; }
 }
 .subpage .lead { font-size: 1.08rem; color: #2c3550; }
 .content a { color: var(--brand-dark); }
+.routing-intro { margin-bottom: 34px; }
+.feature-grid {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0;
+}
+.feature-grid > div {
+  padding: 15px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: #f7f9fd;
+}
+.feature-grid strong, .feature-grid span { display: block; }
+.feature-grid strong { margin-bottom: 5px; color: var(--brand-deep); }
+.feature-grid span { color: var(--muted); font-size: .8rem; line-height: 1.4; }
 .content .lead a, .content p a { text-decoration: underline; text-underline-offset: 2px; }
 .examples { margin: 6px 0 18px 0; padding-left: 22px; }
 .examples li { margin-bottom: 8px; color: #38415a; }
@@ -379,6 +403,7 @@ table.rates td b { color: var(--brand); font-weight: 800; }
 /* ===== Responsive ===== */
 @media (max-width: 680px) {
   .related-grid { grid-template-columns: 1fr; }
+  .feature-grid { grid-template-columns: 1fr; }
   .topbar { justify-content: center; }
 }
 @media (max-width: 760px) {

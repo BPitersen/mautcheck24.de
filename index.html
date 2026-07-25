@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- Primäres SEO -->
-  <title>Lkw-Maut-Rechner 2026 – kostenlos Route &amp; Maut berechnen | mautcheck24</title>
-  <meta name="description" content="Kostenloser Lkw-Maut-Rechner für Deutschland: Start und Ziel eingeben, Lkw-Route auf der Karte sehen und voraussichtliche Mautkosten nach BFStrMG 2026 berechnen.">
+  <title>Lkw-Maut-Rechner &amp; Lkw-Routenplaner 2026 | mautcheck24</title>
+  <meta name="description" content="Kostenlose Lkw-Route mit Start, Ziel und Zwischenstopps planen. Fahrzeit, mautpflichtige Kilometer und Mautkosten passend zu Fahrzeug und CO₂-Klasse berechnen.">
   <meta name="robots" content="index, follow, max-image-preview:large">
   <meta name="theme-color" content="#1d4ed8">
   <link rel="canonical" href="https://mautcheck24.de/">
@@ -14,8 +14,8 @@
 
   <!-- Open Graph / Social -->
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Lkw-Maut-Rechner 2026 – kostenlos Route &amp; Maut berechnen">
-  <meta property="og:description" content="Adresse eingeben, Lkw-Route sehen und voraussichtliche Mautkosten nach BFStrMG 2026 berechnen.">
+  <meta property="og:title" content="Lkw-Maut-Rechner &amp; Lkw-Routenplaner 2026">
+  <meta property="og:description" content="Lkw-Route mit Zwischenstopps planen und Fahrzeit, Mautkilometer sowie Mautkosten berechnen.">
   <meta property="og:url" content="https://mautcheck24.de/">
   <meta property="og:locale" content="de_DE">
   <meta property="og:site_name" content="mautcheck24">
@@ -24,8 +24,8 @@
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="mautcheck24 – Lkw-Maut-Rechner für Deutschland">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Lkw-Maut-Rechner 2026 – kostenlos Route &amp; Maut berechnen">
-  <meta name="twitter:description" content="Adresse eingeben, Lkw-Route sehen und voraussichtliche Mautkosten nach BFStrMG 2026 berechnen.">
+  <meta name="twitter:title" content="Lkw-Maut-Rechner &amp; Lkw-Routenplaner 2026">
+  <meta name="twitter:description" content="Lkw-Route mit Zwischenstopps planen und Fahrzeit, Mautkilometer sowie Mautkosten berechnen.">
   <meta name="twitter:image" content="https://mautcheck24.de/assets/og-image.png">
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -75,8 +75,8 @@
   <section class="hero">
     <aside id="panel">
       <header>
-        <h1>Lkw-Maut-Rechner Deutschland</h1>
-        <p class="sub">Kostenlos Route &amp; Maut berechnen · Sätze nach BFStrMG (Stand 2026)</p>
+        <h1>Lkw-Maut-Rechner und Routenplaner</h1>
+        <p class="sub">Lkw-Route, Fahrzeit &amp; Maut berechnen · Stand 2026</p>
       </header>
 
       <div class="od-fields">
@@ -134,6 +134,16 @@
             <option value="5">Klasse 5 – emissionsfrei*</option>
           </select>
         </div>
+        <fieldset class="vehicle-dimensions">
+          <legend>Fahrzeugmaße anpassen</legend>
+          <div class="dimension-grid">
+            <label>Gewicht <span><input id="truck-weight" type="number" min="3.5" max="60" step="0.1" inputmode="decimal"> t</span></label>
+            <label>Höhe <span><input id="truck-height" type="number" min="2" max="6" step="0.1" inputmode="decimal"> m</span></label>
+            <label>Breite <span><input id="truck-width" type="number" min="1.5" max="4" step="0.05" inputmode="decimal"> m</span></label>
+            <label>Länge <span><input id="truck-length" type="number" min="4" max="30" step="0.1" inputmode="decimal"> m</span></label>
+          </div>
+          <p class="note">Die Maße beeinflussen die Lkw-Route. Verfügbare Kartendaten können unvollständig sein.</p>
+        </fieldset>
         <p class="note">*Emissionsfreie schwere Nutzfahrzeuge sind nach aktuellem BFStrMG bis
           30. Juni 2031 mautbefreit. Emissionsklasse Euro VI vorausgesetzt.
           <a href="/co2-emissionsklasse-lkw/">Wie finde ich die CO₂-Klasse meines Lkw?</a></p>
@@ -180,6 +190,16 @@
 
   <!-- CONTENT: SEO-Inhalt -->
   <article class="content">
+    <section class="routing-intro">
+      <h2>Lkw-Route mit Maut planen</h2>
+      <p>mautcheck24 verbindet einen <strong>Lkw-Routenplaner</strong> mit der Mautberechnung. Plane eine Strecke mit bis zu drei Zwischenstopps und erhalte Lkw-Fahrzeit, mautpflichtige Kilometer, voraussichtliche Maut sowie gesetzliche Lenkpausen in einem Ergebnis.</p>
+      <div class="feature-grid">
+        <div><strong>Lkw-Profil</strong><span>Gewicht und Fahrzeugmaße berücksichtigen</span></div>
+        <div><strong>Mautabschnitte</strong><span>Autobahn, Bundesstraße und mautfrei trennen</span></div>
+        <div><strong>Tourenplanung</strong><span>Zwischenstopps, Fahrzeit und Pausen einbeziehen</span></div>
+      </div>
+      <p class="small">Die Planung basiert auf verfügbaren OpenStreetMap-Daten und ist keine Navigation oder amtliche Mautabrechnung. Live-Verkehr und sämtliche temporären Sperrungen sind nicht vollständig enthalten. <a href="/lkw-routenplanung/">Mehr zur Lkw-Routenplanung</a></p>
+    </section>
     <h2>Lkw-Maut in Deutschland 2026 – so berechnest du sie kostenlos</h2>
     <p>
       Mit dem <strong>Lkw-Maut-Rechner von mautcheck24</strong> ermittelst du in Sekunden, wie

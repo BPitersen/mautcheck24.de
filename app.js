@@ -22,6 +22,36 @@ for (const [key, v] of Object.entries(VEHICLES)) {
   vehicleSel.add(new Option(v.label, key));
 }
 vehicleSel.value = "a5";
+const dimensionInputs = {
+  weight: document.getElementById("truck-weight"),
+  height: document.getElementById("truck-height"),
+  width: document.getElementById("truck-width"),
+  length: document.getElementById("truck-length"),
+};
+
+function syncVehicleDimensions() {
+  const vehicle = VEHICLES[vehicleSel.value];
+  dimensionInputs.weight.value = vehicle.weight;
+  dimensionInputs.height.value = vehicle.height;
+  dimensionInputs.width.value = 2.55;
+  dimensionInputs.length.value = vehicle.length;
+}
+
+function selectedVehicleProfile() {
+  const preset = VEHICLES[vehicleSel.value];
+  const number = (input, fallback) => input.checkValidity() && input.value !== ""
+    ? Number(input.value) : fallback;
+  return {
+    ...preset,
+    weight: number(dimensionInputs.weight, preset.weight),
+    height: number(dimensionInputs.height, preset.height),
+    width: number(dimensionInputs.width, 2.55),
+    length: number(dimensionInputs.length, preset.length),
+  };
+}
+
+vehicleSel.addEventListener("change", syncVehicleDimensions);
+syncVehicleDimensions();
 
 // ---------- Adresssuche (explizit, Nominatim-konform) ----------
 const geocodeCache = new Map();
@@ -366,7 +396,7 @@ function fetchRoute(points, veh) {
     costing: "truck",
     costing_options: { truck: {
       weight: veh.weight, axle_count: veh.axles,
-      height: veh.height, width: 2.55, length: veh.length,
+      height: veh.height, width: veh.width, length: veh.length,
       // Feldwege (highway=track), Wohnstraßen-Durchfahrten und Erschließungswege meiden.
       use_tracks: 0, use_living_streets: 0, service_penalty: 100, service_factor: 1.5,
     } },
@@ -550,7 +580,7 @@ async function calc() {
     destState.coord = b; destState.label ||= destQ;
     showSelectedLocations();
 
-    const veh = VEHICLES[vehicleSel.value];
+    const veh = selectedVehicleProfile();
     status.textContent = "Berechne Lkw-Route …";
 
     const mainRes = await fetchRoute([a, ...stops, b], veh);
@@ -655,6 +685,10 @@ function buildShareUrl() {
   waypointEntries.forEach((entry) => url.searchParams.append("stopp", entry.input.value.trim()));
   url.searchParams.set("fahrzeug", vehicleSel.value);
   url.searchParams.set("co2", $("co2").value);
+  url.searchParams.set("gewicht", dimensionInputs.weight.value);
+  url.searchParams.set("hoehe", dimensionInputs.height.value);
+  url.searchParams.set("breite", dimensionInputs.width.value);
+  url.searchParams.set("laenge", dimensionInputs.length.value);
   return url.toString();
 }
 
@@ -672,5 +706,13 @@ if (initialParams.has("start")) $("start").value = initialParams.get("start").sl
 if (initialParams.has("ziel")) $("dest").value = initialParams.get("ziel").slice(0, 200);
 for (const stop of initialParams.getAll("stopp").slice(0, MAX_WAYPOINTS)) addWaypoint(stop);
 if (VEHICLES[initialParams.get("fahrzeug")]) vehicleSel.value = initialParams.get("fahrzeug");
+syncVehicleDimensions();
 if (["1", "2", "3", "4", "5"].includes(initialParams.get("co2"))) $("co2").value = initialParams.get("co2");
+for (const [param, input] of [["gewicht", dimensionInputs.weight], ["hoehe", dimensionInputs.height],
+  ["breite", dimensionInputs.width], ["laenge", dimensionInputs.length]]) {
+  if (initialParams.has(param)) {
+    input.value = initialParams.get(param);
+    if (!input.checkValidity()) syncVehicleDimensions();
+  }
+}
 if ($("start").value && $("dest").value) calc();

@@ -1,9 +1,18 @@
 {
-  "generatedAt": "2026-07-24T18:30:39.376Z",
+  "generatedAt": "2026-07-25T09:12:52.321Z",
+  "profile": "40 t · 5 Achsen · 4,0 m Höhe · Euro VI · CO₂-Klasse 1",
   "routes": {
     "hamburg-muenchen": {
-      "distanceKm": 807,
-      "driveMinutes": 470,
+      "distanceKm": 807.4,
+      "driveMinutes": 558,
+      "totalMinutes": 648,
+      "breakCount": 2,
+      "restCount": 0,
+      "motorwayKm": 797.5,
+      "federalKm": 4.2,
+      "freeKm": 5.6,
+      "tollKm": 801.7,
+      "toll40": 278.99,
       "roads": [
         "A7",
         "A2",
@@ -14,8 +23,16 @@
       ]
     },
     "berlin-koeln": {
-      "distanceKm": 573,
-      "driveMinutes": 372,
+      "distanceKm": 573.5,
+      "driveMinutes": 417,
+      "totalMinutes": 462,
+      "breakCount": 1,
+      "restCount": 0,
+      "motorwayKm": 551.5,
+      "federalKm": 11.2,
+      "freeKm": 10.7,
+      "tollKm": 562.7,
+      "toll40": 195.82,
       "roads": [
         "A10",
         "A2",
@@ -23,28 +40,53 @@
       ]
     },
     "frankfurt-hamburg": {
-      "distanceKm": 481,
-      "driveMinutes": 307,
+      "distanceKm": 484.8,
+      "driveMinutes": 345,
+      "totalMinutes": 390,
+      "breakCount": 1,
+      "restCount": 0,
+      "motorwayKm": 475.1,
+      "federalKm": 5.9,
+      "freeKm": 3.8,
+      "tollKm": 481,
+      "toll40": 167.39,
       "roads": [
-        "A661",
+        "A648",
         "A5",
         "A49",
         "A44",
         "A7",
-        "A1"
+        "A1",
+        "A255"
       ]
     },
     "hamburg-berlin": {
-      "distanceKm": 289,
-      "driveMinutes": 191,
+      "distanceKm": 288.7,
+      "driveMinutes": 221,
+      "totalMinutes": 221,
+      "breakCount": 0,
+      "restCount": 0,
+      "motorwayKm": 274.9,
+      "federalKm": 1.9,
+      "freeKm": 11.8,
+      "tollKm": 276.8,
+      "toll40": 96.33,
       "roads": [
         "A24",
         "A114"
       ]
     },
     "berlin-muenchen": {
-      "distanceKm": 601,
-      "driveMinutes": 360,
+      "distanceKm": 600.9,
+      "driveMinutes": 429,
+      "totalMinutes": 474,
+      "breakCount": 1,
+      "restCount": 0,
+      "motorwayKm": 585.7,
+      "federalKm": 9.1,
+      "freeKm": 6.1,
+      "tollKm": 594.7,
+      "toll40": 206.96,
       "roads": [
         "A9",
         "A99",
@@ -52,8 +94,16 @@
       ]
     },
     "koeln-muenchen": {
-      "distanceKm": 591,
-      "driveMinutes": 354,
+      "distanceKm": 591.4,
+      "driveMinutes": 416,
+      "totalMinutes": 461,
+      "breakCount": 1,
+      "restCount": 0,
+      "motorwayKm": 581.8,
+      "federalKm": 2,
+      "freeKm": 7.5,
+      "tollKm": 583.9,
+      "toll40": 203.2,
       "roads": [
         "A4",
         "A3",
@@ -63,8 +113,16 @@
       ]
     },
     "frankfurt-muenchen": {
-      "distanceKm": 409,
-      "driveMinutes": 251,
+      "distanceKm": 409.1,
+      "driveMinutes": 296,
+      "totalMinutes": 341,
+      "breakCount": 1,
+      "restCount": 0,
+      "motorwayKm": 395.6,
+      "federalKm": 5.8,
+      "freeKm": 7.8,
+      "tollKm": 401.3,
+      "toll40": 139.65,
       "roads": [
         "A3",
         "A9",
@@ -73,8 +131,16 @@
       ]
     },
     "stuttgart-hamburg": {
-      "distanceKm": 668,
-      "driveMinutes": 421,
+      "distanceKm": 668.1,
+      "driveMinutes": 475,
+      "totalMinutes": 520,
+      "breakCount": 1,
+      "restCount": 0,
+      "motorwayKm": 649.5,
+      "federalKm": 14.6,
+      "freeKm": 3.9,
+      "tollKm": 664.1,
+      "toll40": 231.11,
       "roads": [
         "A81",
         "A3",
@@ -84,8 +150,16 @@
       ]
     },
     "duesseldorf-berlin": {
-      "distanceKm": 559,
-      "driveMinutes": 363,
+      "distanceKm": 558.5,
+      "driveMinutes": 407,
+      "totalMinutes": 452,
+      "breakCount": 1,
+      "restCount": 0,
+      "motorwayKm": 541,
+      "federalKm": 11.2,
+      "freeKm": 6.3,
+      "tollKm": 552.2,
+      "toll40": 192.17,
       "roads": [
         "A46",
         "A1",
@@ -95,8 +169,16 @@
       ]
     },
     "leipzig-koeln": {
-      "distanceKm": 498,
-      "driveMinutes": 305,
+      "distanceKm": 498.4,
+      "driveMinutes": 358,
+      "totalMinutes": 403,
+      "breakCount": 1,
+      "restCount": 0,
+      "motorwayKm": 474.7,
+      "federalKm": 7,
+      "freeKm": 16.6,
+      "tollKm": 481.7,
+      "toll40": 167.63,
       "roads": [
         "A38",
         "A7",
@@ -105,8 +187,16 @@
       ]
     },
     "dortmund-muenchen": {
-      "distanceKm": 622,
-      "driveMinutes": 372,
+      "distanceKm": 622.1,
+      "driveMinutes": 437,
+      "totalMinutes": 482,
+      "breakCount": 1,
+      "restCount": 0,
+      "motorwayKm": 608.3,
+      "federalKm": 7.6,
+      "freeKm": 6.2,
+      "tollKm": 615.9,
+      "toll40": 214.33,
       "roads": [
         "A45",
         "A3",
@@ -116,8 +206,16 @@
       ]
     },
     "bremen-stuttgart": {
-      "distanceKm": 642,
-      "driveMinutes": 415,
+      "distanceKm": 641.6,
+      "driveMinutes": 467,
+      "totalMinutes": 512,
+      "breakCount": 1,
+      "restCount": 0,
+      "motorwayKm": 616.7,
+      "federalKm": 14.4,
+      "freeKm": 10.4,
+      "tollKm": 631.1,
+      "toll40": 219.62,
       "roads": [
         "A1",
         "A27",
@@ -127,8 +225,16 @@
       ]
     },
     "hannover-frankfurt": {
-      "distanceKm": 338,
-      "driveMinutes": 220,
+      "distanceKm": 337.7,
+      "driveMinutes": 247,
+      "totalMinutes": 247,
+      "breakCount": 0,
+      "restCount": 0,
+      "motorwayKm": 320.5,
+      "federalKm": 8.8,
+      "freeKm": 8.4,
+      "tollKm": 329.3,
+      "toll40": 114.6,
       "roads": [
         "A37",
         "A7",
@@ -138,8 +244,16 @@
       ]
     },
     "nuernberg-hamburg": {
-      "distanceKm": 607,
-      "driveMinutes": 376,
+      "distanceKm": 606.7,
+      "driveMinutes": 429,
+      "totalMinutes": 474,
+      "breakCount": 1,
+      "restCount": 0,
+      "motorwayKm": 589.7,
+      "federalKm": 11.5,
+      "freeKm": 5.4,
+      "tollKm": 601.3,
+      "toll40": 209.25,
       "roads": [
         "A3",
         "A7",
@@ -148,19 +262,37 @@
       ]
     },
     "dresden-koeln": {
-      "distanceKm": 569,
-      "driveMinutes": 337,
+      "distanceKm": 572.7,
+      "driveMinutes": 413,
+      "totalMinutes": 458,
+      "breakCount": 1,
+      "restCount": 0,
+      "motorwayKm": 551.9,
+      "federalKm": 15.4,
+      "freeKm": 5.3,
+      "tollKm": 567.3,
+      "toll40": 197.42,
       "roads": [
         "A4",
         "A7",
         "A5",
         "A480",
-        "A45"
+        "A45",
+        "A3",
+        "A59"
       ]
     },
     "erfurt-hamburg": {
-      "distanceKm": 393,
-      "driveMinutes": 258,
+      "distanceKm": 393.2,
+      "driveMinutes": 304,
+      "totalMinutes": 349,
+      "breakCount": 1,
+      "restCount": 0,
+      "motorwayKm": 310.8,
+      "federalKm": 74.1,
+      "freeKm": 8.3,
+      "tollKm": 384.9,
+      "toll40": 133.95,
       "roads": [
         "A71",
         "A38",
@@ -170,8 +302,16 @@
       ]
     },
     "rostock-muenchen": {
-      "distanceKm": 792,
-      "driveMinutes": 453,
+      "distanceKm": 792.1,
+      "driveMinutes": 549,
+      "totalMinutes": 639,
+      "breakCount": 2,
+      "restCount": 0,
+      "motorwayKm": 779.6,
+      "federalKm": 0.1,
+      "freeKm": 12.3,
+      "tollKm": 779.8,
+      "toll40": 271.37,
       "roads": [
         "A10",
         "A9",
@@ -180,15 +320,31 @@
       ]
     },
     "hamburg-koeln": {
-      "distanceKm": 425,
-      "driveMinutes": 273,
+      "distanceKm": 424.9,
+      "driveMinutes": 303,
+      "totalMinutes": 348,
+      "breakCount": 1,
+      "restCount": 0,
+      "motorwayKm": 408.3,
+      "federalKm": 6.3,
+      "freeKm": 10.2,
+      "tollKm": 414.6,
+      "toll40": 144.28,
       "roads": [
         "A1"
       ]
     },
     "berlin-frankfurt": {
-      "distanceKm": 546,
-      "driveMinutes": 332,
+      "distanceKm": 545.9,
+      "driveMinutes": 395,
+      "totalMinutes": 440,
+      "breakCount": 1,
+      "restCount": 0,
+      "motorwayKm": 531.2,
+      "federalKm": 10.9,
+      "freeKm": 3.8,
+      "tollKm": 542.1,
+      "toll40": 188.65,
       "roads": [
         "A9",
         "A4",
@@ -198,8 +354,16 @@
       ]
     },
     "koeln-stuttgart": {
-      "distanceKm": 370,
-      "driveMinutes": 248,
+      "distanceKm": 369.8,
+      "driveMinutes": 278,
+      "totalMinutes": 323,
+      "breakCount": 1,
+      "restCount": 0,
+      "motorwayKm": 349.7,
+      "federalKm": 16.3,
+      "freeKm": 3.8,
+      "tollKm": 366,
+      "toll40": 127.37,
       "roads": [
         "A4",
         "A3",
@@ -210,36 +374,70 @@
     },
     "muenchen-leipzig": {
       "distanceKm": 424,
-      "driveMinutes": 262,
+      "driveMinutes": 311,
+      "totalMinutes": 356,
+      "breakCount": 1,
+      "restCount": 0,
+      "motorwayKm": 402.5,
+      "federalKm": 9.3,
+      "freeKm": 12.1,
+      "tollKm": 411.8,
+      "toll40": 143.31,
       "roads": [
         "A9"
       ]
     },
     "frankfurt-berlin": {
-      "distanceKm": 546,
-      "driveMinutes": 335,
+      "distanceKm": 550.1,
+      "driveMinutes": 401,
+      "totalMinutes": 446,
+      "breakCount": 1,
+      "restCount": 0,
+      "motorwayKm": 534.4,
+      "federalKm": 11.6,
+      "freeKm": 4.1,
+      "tollKm": 545.9,
+      "toll40": 189.97,
       "roads": [
-        "A661",
+        "A648",
         "A5",
         "A9",
         "A115"
       ]
     },
     "bremen-muenchen": {
-      "distanceKm": 779,
-      "driveMinutes": 461,
+      "distanceKm": 779.4,
+      "driveMinutes": 546,
+      "totalMinutes": 636,
+      "breakCount": 2,
+      "restCount": 0,
+      "motorwayKm": 765,
+      "federalKm": 0.1,
+      "freeKm": 14.2,
+      "tollKm": 765.2,
+      "toll40": 266.29,
       "roads": [
         "A1",
         "A27",
         "A7",
         "A2",
         "A14",
-        "A9"
+        "A9",
+        "A99",
+        "A94"
       ]
     },
     "hannover-muenchen": {
-      "distanceKm": 649,
-      "driveMinutes": 393,
+      "distanceKm": 649.5,
+      "driveMinutes": 458,
+      "totalMinutes": 503,
+      "breakCount": 1,
+      "restCount": 0,
+      "motorwayKm": 631.7,
+      "federalKm": 7,
+      "freeKm": 10.7,
+      "tollKm": 638.7,
+      "toll40": 222.27,
       "roads": [
         "A37",
         "A7",
@@ -250,20 +448,36 @@
       ]
     },
     "dresden-hamburg": {
-      "distanceKm": 507,
-      "driveMinutes": 311,
+      "distanceKm": 493.6,
+      "driveMinutes": 348,
+      "totalMinutes": 393,
+      "breakCount": 1,
+      "restCount": 0,
+      "motorwayKm": 484.4,
+      "federalKm": 5.1,
+      "freeKm": 4.2,
+      "tollKm": 489.4,
+      "toll40": 170.31,
       "roads": [
         "A4",
-        "A13",
-        "A10",
-        "A24",
+        "A14",
+        "A2",
+        "A7",
         "A1",
         "A255"
       ]
     },
     "dortmund-berlin": {
       "distanceKm": 494,
-      "driveMinutes": 324,
+      "driveMinutes": 365,
+      "totalMinutes": 410,
+      "breakCount": 1,
+      "restCount": 0,
+      "motorwayKm": 470.2,
+      "federalKm": 20.6,
+      "freeKm": 3.2,
+      "tollKm": 490.8,
+      "toll40": 170.8,
       "roads": [
         "A1",
         "A2",
@@ -273,7 +487,15 @@
     },
     "stuttgart-berlin": {
       "distanceKm": 632,
-      "driveMinutes": 390,
+      "driveMinutes": 459,
+      "totalMinutes": 504,
+      "breakCount": 1,
+      "restCount": 0,
+      "motorwayKm": 607.3,
+      "federalKm": 20.4,
+      "freeKm": 4.3,
+      "tollKm": 627.7,
+      "toll40": 218.44,
       "roads": [
         "A81",
         "A6",
@@ -282,23 +504,47 @@
       ]
     },
     "nuernberg-koeln": {
-      "distanceKm": 406,
-      "driveMinutes": 252,
+      "distanceKm": 405.9,
+      "driveMinutes": 293,
+      "totalMinutes": 338,
+      "breakCount": 1,
+      "restCount": 0,
+      "motorwayKm": 389.5,
+      "federalKm": 10.7,
+      "freeKm": 5.7,
+      "tollKm": 400.1,
+      "toll40": 139.23,
       "roads": [
         "A3",
         "A4"
       ]
     },
     "rostock-berlin": {
-      "distanceKm": 230,
-      "driveMinutes": 153,
+      "distanceKm": 230.4,
+      "driveMinutes": 178,
+      "totalMinutes": 178,
+      "breakCount": 0,
+      "restCount": 0,
+      "motorwayKm": 215.7,
+      "federalKm": 0.7,
+      "freeKm": 14,
+      "tollKm": 216.4,
+      "toll40": 75.31,
       "roads": [
         "A114"
       ]
     },
     "leipzig-hamburg": {
-      "distanceKm": 397,
-      "driveMinutes": 250,
+      "distanceKm": 397.3,
+      "driveMinutes": 287,
+      "totalMinutes": 332,
+      "breakCount": 1,
+      "restCount": 0,
+      "motorwayKm": 382.1,
+      "federalKm": 11.8,
+      "freeKm": 3.3,
+      "tollKm": 393.9,
+      "toll40": 137.08,
       "roads": [
         "A14",
         "A2",
