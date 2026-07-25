@@ -137,7 +137,6 @@ function setupAddressSearch(inputId, sugId, searchId, helpId) {
   const sug = document.getElementById(sugId);
   const searchBtn = document.getElementById(searchId);
   const help = document.getElementById(helpId);
-  const field = input.closest(".autocomplete");
   const state = { coord: null, label: "" };
   let activeIndex = -1;
   let resultButtons = [];
@@ -149,7 +148,6 @@ function setupAddressSearch(inputId, sugId, searchId, helpId) {
     const version = ++searchVersion;
     state.coord = null;
     state.label = "";
-    field.classList.remove("is-valid");
     const q = input.value.trim();
     help.textContent = q.length >= 3
       ? "Vorschläge werden geladen …"
@@ -193,8 +191,7 @@ function setupAddressSearch(inputId, sugId, searchId, helpId) {
     input.value = parts.value;
     state.coord = { lat: +hit.lat, lon: +hit.lon };
     state.label = [parts.primary, parts.secondary].filter(Boolean).join(", ");
-    field.classList.add("is-valid");
-    help.textContent = "Adresse erkannt und auf der Karte markiert";
+    help.textContent = "";
     closeSuggestions();
     showSelectedLocations(state);
   }
@@ -458,10 +455,8 @@ $("swap").addEventListener("click", () => {
   [si.value, di.value] = [di.value, si.value];
   [startState.coord, destState.coord] = [destState.coord, startState.coord];
   [startState.label, destState.label] = [destState.label, startState.label];
-  si.closest(".autocomplete").classList.toggle("is-valid", !!startState.coord);
-  di.closest(".autocomplete").classList.toggle("is-valid", !!destState.coord);
-  $("start-help").textContent = startState.coord ? "Adresse erkannt und auf der Karte markiert" : "Tippen für Vorschläge · Enter für genaue Suche";
-  $("dest-help").textContent = destState.coord ? "Adresse erkannt und auf der Karte markiert" : "Tippen für Vorschläge · Enter für genaue Suche";
+  $("start-help").textContent = startState.coord ? "" : "Tippen für Vorschläge · Enter für genaue Suche";
+  $("dest-help").textContent = destState.coord ? "" : "Tippen für Vorschläge · Enter für genaue Suche";
   showSelectedLocations();
   if (!$("result").hidden) calc();
 });
@@ -484,8 +479,6 @@ async function calc() {
     const b = destState.coord || (await geocodeFallback(destQ));
     startState.coord = a; startState.label ||= startQ;
     destState.coord = b; destState.label ||= destQ;
-    $("start").closest(".autocomplete").classList.add("is-valid");
-    $("dest").closest(".autocomplete").classList.add("is-valid");
     showSelectedLocations();
 
     const veh = VEHICLES[vehicleSel.value];
