@@ -115,6 +115,9 @@ function showSelectedLocations(focusState = null) {
   selectionLayer.clearLayers();
   const selected = [
     { state: startState, label: "A", kind: "start", name: "Start" },
+    ...waypointEntries.map((entry, index) => ({
+      state: entry.state, label: String(index + 1), kind: "stop", name: `Zwischenstopp ${index + 1}`,
+    })),
     { state: destState, label: "B", kind: "dest", name: "Ziel" },
   ].filter((item) => item.state.coord);
   for (const item of selected) {
@@ -267,8 +270,55 @@ function setupAddressSearch(inputId, sugId, searchId, helpId) {
   input.addEventListener("blur", () => setTimeout(closeSuggestions, 250));
   return state;
 }
+const $ = (id) => document.getElementById(id);
 const startState = setupAddressSearch("start", "start-sug", "start-search", "start-help");
 const destState = setupAddressSearch("dest", "dest-sug", "dest-search", "dest-help");
+const waypointEntries = [];
+const MAX_WAYPOINTS = 3;
+let waypointSequence = 0;
+
+function addWaypoint(value = "") {
+  if (waypointEntries.length >= MAX_WAYPOINTS) return;
+  const id = `waypoint-${++waypointSequence}`;
+  const wrapper = document.createElement("div");
+  wrapper.className = "field autocomplete waypoint-field";
+  wrapper.innerHTML = `
+    <label for="${id}">Zwischenstopp ${waypointEntries.length + 1}</label>
+    <div class="address-input">
+      <input id="${id}" type="text" placeholder="Adresse oder Ort" autocomplete="off"
+             aria-describedby="${id}-help" aria-expanded="false" aria-controls="${id}-sug">
+      <button type="button" class="address-search" id="${id}-search"
+              aria-label="Zwischenstopp suchen" title="Zwischenstopp suchen">⌕</button>
+    </div>
+    <p class="address-help" id="${id}-help">Tippen für Vorschläge · Enter für genaue Suche</p>
+    <div class="suggestions" id="${id}-sug" role="listbox" aria-label="Zwischenstopps"></div>
+    <button type="button" class="waypoint-remove" aria-label="Zwischenstopp entfernen"
+            title="Zwischenstopp entfernen">×</button>`;
+  document.getElementById("waypoints").appendChild(wrapper);
+  const state = setupAddressSearch(id, `${id}-sug`, `${id}-search`, `${id}-help`);
+  const entry = { wrapper, input: wrapper.querySelector("input"), state };
+  waypointEntries.push(entry);
+  entry.input.value = value.slice(0, 200);
+  wrapper.querySelector(".waypoint-remove").addEventListener("click", () => {
+    const index = waypointEntries.indexOf(entry);
+    if (index >= 0) waypointEntries.splice(index, 1);
+    wrapper.remove();
+    refreshWaypointLabels();
+    showSelectedLocations();
+  });
+  refreshWaypointLabels();
+  if (!value) entry.input.focus();
+  return entry;
+}
+
+function refreshWaypointLabels() {
+  waypointEntries.forEach((entry, index) => {
+    entry.wrapper.querySelector("label").textContent = `Zwischenstopp ${index + 1}`;
+  });
+  document.getElementById("add-waypoint").hidden = waypointEntries.length >= MAX_WAYPOINTS;
+}
+
+document.getElementById("add-waypoint").addEventListener("click", () => addWaypoint());
 
 async function geocodeFallback(q) {
   const hits = await searchAddress(q, 1);
@@ -296,7 +346,10 @@ async function valhalla(path, payload) {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error(`Routing-Server: HTTP ${res.status}`);
+  if (!res.ok) {
+    const detail = await res.json().catch(() => null);
+    throw new Error(detail?.error || `Routing-Server: HTTP ${res.status}`);
+  }
   return res.json();
 }
 
@@ -307,9 +360,9 @@ const havKm = ([la1, lo1], [la2, lo2]) => {
   return 12742 * Math.asin(Math.sqrt(h));
 };
 
-function fetchRoute(a, b, veh) {
-  return valhalla("/route", {
-    locations: [{ lat: a.lat, lon: a.lon }, { lat: b.lat, lon: b.lon }],
+function fetchRoute(points, veh) {
+  const request = {
+    locations: points.map(({ lat, lon }) => ({ lat, lon })),
     costing: "truck",
     costing_options: { truck: {
       weight: veh.weight, axle_count: veh.axles,
@@ -318,23 +371,28 @@ function fetchRoute(a, b, veh) {
       use_tracks: 0, use_living_streets: 0, service_penalty: 100, service_factor: 1.5,
     } },
     units: "kilometers",
-    alternates: 2,
-  });
+  };
+  // Valhalla unterstützt Alternativrouten nur bei einer direkten A–B-Route.
+  if (points.length === 2) request.alternates = 2;
+  return valhalla("/route", request);
 }
 
 // Route analysieren: Kanten klassifizieren (Autobahn / Bundesstraße / mautfrei)
 // + Lkw-Fahrzeit: max. 90 km/h auf Autobahn, sonst max. 60 km/h (>7,5t außerorts)
 async function analyzeTrip(trip) {
-  const shape = trip.legs.flatMap((l) => decodeShape(l.shape));
+  const shape = trip.legs.flatMap((leg, index) => {
+    const points = decodeShape(leg.shape);
+    return index ? points.slice(1) : points;
+  });
 
-  // trace_attributes erlaubt max. 1000 km Pfadlänge und max. 16000 Shape-Punkte
-  // -> Route in Stücke von ~900 km / 15000 Punkten teilen
+  // Die öffentliche Instanz begrenzt trace_attributes auf rund 200 km.
+  // -> Route in Stücke von ~180 km / 15000 Punkten teilen
   const chunks = [];
   let cur = [shape[0]], curKm = 0;
   for (let i = 1; i < shape.length; i++) {
     curKm += havKm(shape[i - 1], shape[i]);
     cur.push(shape[i]);
-    if (curKm > 900 || cur.length >= 15000) { chunks.push(cur); cur = [shape[i]]; curKm = 0; }
+    if (curKm > 180 || cur.length >= 15000) { chunks.push(cur); cur = [shape[i]]; curKm = 0; }
   }
   if (cur.length > 1) chunks.push(cur);
 
@@ -347,7 +405,7 @@ async function analyzeTrip(trip) {
   for (const chunk of chunks) {
     const ta = await valhalla("/trace_attributes", {
       shape: chunk.map(([lat, lon]) => ({ lat, lon })),
-      costing: "truck", shape_match: "edge_walk",
+      costing: "truck", shape_match: trip.legs.length > 1 ? "walk_or_snap" : "edge_walk",
       filters: { attributes: ["edge.length", "edge.road_class", "edge.names", "edge.speed",
         "edge.begin_shape_index", "edge.end_shape_index", "shape"], action: "include" },
     });
@@ -422,7 +480,6 @@ async function showConstruction(routeShape, routeKm) {
 }
 
 // ---------- Hauptlogik ----------
-const $ = (id) => document.getElementById(id);
 const fmtKm = (km) => km.toLocaleString("de-DE", { maximumFractionDigits: 1 }) + " km";
 const fmtEur = (v) => v.toLocaleString("de-DE", { style: "currency", currency: "EUR" });
 const fmtH = (x) => { const hh = Math.floor(x), mm = Math.round((x - hh) * 60);
@@ -467,6 +524,10 @@ async function calc() {
   const startQ = $("start").value.trim();
   const destQ = $("dest").value.trim();
   if (!startQ || !destQ) { status.textContent = "Bitte Start und Ziel eingeben."; return; }
+  if (waypointEntries.some((entry) => !entry.input.value.trim())) {
+    status.textContent = "Bitte den Zwischenstopp eingeben oder entfernen.";
+    return;
+  }
 
   btn.disabled = true;
   status.className = "working";
@@ -477,6 +538,14 @@ async function calc() {
     status.textContent = "Suche Adressen …";
     const a = startState.coord || (await geocodeFallback(startQ));
     const b = destState.coord || (await geocodeFallback(destQ));
+    const stops = [];
+    for (const entry of waypointEntries) {
+      const query = entry.input.value.trim();
+      const coord = entry.state.coord || (await geocodeFallback(query));
+      entry.state.coord = coord;
+      entry.state.label ||= query;
+      stops.push(coord);
+    }
     startState.coord = a; startState.label ||= startQ;
     destState.coord = b; destState.label ||= destQ;
     showSelectedLocations();
@@ -484,7 +553,7 @@ async function calc() {
     const veh = VEHICLES[vehicleSel.value];
     status.textContent = "Berechne Lkw-Route …";
 
-    const mainRes = await fetchRoute(a, b, veh);
+    const mainRes = await fetchRoute([a, ...stops, b], veh);
     const co2Class = $("co2").value;
     const rate = tollRate(vehicleSel.value, co2Class);
 
@@ -583,6 +652,7 @@ function buildShareUrl() {
   const url = new URL(location.origin + location.pathname);
   url.searchParams.set("start", $("start").value.trim());
   url.searchParams.set("ziel", $("dest").value.trim());
+  waypointEntries.forEach((entry) => url.searchParams.append("stopp", entry.input.value.trim()));
   url.searchParams.set("fahrzeug", vehicleSel.value);
   url.searchParams.set("co2", $("co2").value);
   return url.toString();
@@ -600,6 +670,7 @@ function updateShareLinks() {
 const initialParams = new URLSearchParams(location.search);
 if (initialParams.has("start")) $("start").value = initialParams.get("start").slice(0, 200);
 if (initialParams.has("ziel")) $("dest").value = initialParams.get("ziel").slice(0, 200);
+for (const stop of initialParams.getAll("stopp").slice(0, MAX_WAYPOINTS)) addWaypoint(stop);
 if (VEHICLES[initialParams.get("fahrzeug")]) vehicleSel.value = initialParams.get("fahrzeug");
 if (["1", "2", "3", "4", "5"].includes(initialParams.get("co2"))) $("co2").value = initialParams.get("co2");
 if ($("start").value && $("dest").value) calc();
