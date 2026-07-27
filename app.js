@@ -484,15 +484,28 @@ async function selectMainRoadRoute(routeResponse) {
     candidates.push(await analyzeTrip(alternative.trip));
   }
   const fastest = Math.min(...candidates.map((candidate) => candidate.driveH));
-  return candidates
-    .filter((candidate) => candidate.driveH <= fastest * 1.45)
-    .reduce((best, candidate) => {
-      if (candidate.throughMinorKm < best.throughMinorKm - 0.15) return candidate;
-      if (best.throughMinorKm < candidate.throughMinorKm - 0.15) return best;
-      if (candidate.minorKm < best.minorKm - 0.3) return candidate;
-      if (best.minorKm < candidate.minorKm - 0.3) return best;
-      return candidate.driveH < best.driveH ? candidate : best;
-    });
+  const reasonable = candidates.filter((candidate) => candidate.driveH <= fastest * 1.45);
+
+  // Zuerst echte Nebenstraßen auf dem Hauptweg vermeiden. Kleine Unterschiede
+  // innerhalb der notwendigen Zufahrt zu Start/Ziel/Stopps gelten als gleichwertig.
+  const leastThroughMinor = Math.min(...reasonable.map((candidate) => candidate.throughMinorKm));
+  const mainRoadRoutes = reasonable.filter(
+    (candidate) => candidate.throughMinorKm <= leastThroughMinor + 0.15);
+  const leastMinor = Math.min(...mainRoadRoutes.map((candidate) => candidate.minorKm));
+  const comparableRoads = mainRoadRoutes.filter(
+    (candidate) => candidate.minorKm <= leastMinor + 0.3);
+
+  // Bei praktisch gleicher Fahrzeit ist eine deutlich kürzere Route sinnvoller:
+  // Sie verbraucht weniger Kraftstoff und ist häufig auch weniger mautpflichtig.
+  // Erst ab mehr als fünf Minuten Zeitvorteil gewinnt wieder die schnellere Route.
+  const fastestComparable = Math.min(...comparableRoads.map((candidate) => candidate.driveH));
+  const nearEqualTime = comparableRoads.filter(
+    (candidate) => candidate.driveH <= fastestComparable + 5 / 60);
+  return nearEqualTime.reduce((best, candidate) => {
+    if (candidate.km < best.km - 0.5) return candidate;
+    if (best.km < candidate.km - 0.5) return best;
+    return candidate.driveH < best.driveH ? candidate : best;
+  });
 }
 
 function spacedAvoidLocations(points, limit = 12) {
