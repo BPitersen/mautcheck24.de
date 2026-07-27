@@ -3,7 +3,9 @@
 Kostenloser, statischer Lkw-Maut-Rechner für Deutschland. Adresse eingeben →
 LKW-Route auf der Karte + Maut nach BFStrMG 2026 inkl. Lenk- und Ruhezeiten.
 
-- **Routing/Geocoding:** OpenStreetMap (Nominatim) + FOSSGIS-Valhalla (Truck-Profil)
+- **Routing/Geocoding:** OpenStreetMap (Photon/Nominatim) + FOSSGIS-Valhalla (Truck-Profil)
+- **Straßenwahl:** Motorway/Trunk/Primary/Secondary/Tertiary werden bevorzugt;
+  notwendige Zufahrten an Start, Ziel und Zwischenstopps bleiben möglich.
 - **Mautsätze:** Anlage 1 BFStrMG, gepflegt in `rates.js`
 - Kein Backend, keine Build-Tools – reines HTML/CSS/JS.
 

@@ -390,18 +390,24 @@ const havKm = ([la1, lo1], [la2, lo2]) => {
   return 12742 * Math.asin(Math.sqrt(h));
 };
 
-function fetchRoute(points, veh) {
+function fetchRoute(points, veh, avoidLocations = []) {
   const request = {
     locations: points.map(({ lat, lon }) => ({ lat, lon })),
     costing: "truck",
     costing_options: { truck: {
       weight: veh.weight, axle_count: veh.axles,
       height: veh.height, width: veh.width, length: veh.length,
-      // Feldwege (highway=track), Wohnstraßen-Durchfahrten und Erschließungswege meiden.
-      use_tracks: 0, use_living_streets: 0, service_penalty: 100, service_factor: 1.5,
+      // Hauptstraßen bevorzugen; Zufahrten zu Start, Ziel und Stopps bleiben erreichbar.
+      use_highways: 1, use_tolls: 1, use_tracks: 0, use_living_streets: 0,
+      exclude_unpaved: true, shortest: false, maneuver_penalty: 30,
+      service_penalty: 7200, service_factor: 50,
+      private_access_penalty: 7200, gate_penalty: 7200,
     } },
     units: "kilometers",
   };
+  if (avoidLocations.length) {
+    request.avoid_locations = avoidLocations.map(([lat, lon]) => ({ lat, lon }));
+  }
   // Valhalla unterstützt Alternativrouten nur bei einer direkten A–B-Route.
   if (points.length === 2) request.alternates = 2;
   return valhalla("/route", request);
@@ -430,7 +436,10 @@ async function analyzeTrip(trip) {
   let cumKm = 0, throughMinorKm = 0;
   const throughMinor = [];
   const totalKm = trip.summary.length;
-  const MINOR = ["unclassified", "residential", "service", "track", "living_street"];
+  const MAIN_ROADS = new Set(["motorway", "trunk", "primary", "secondary", "tertiary"]);
+  const breakKm = [0];
+  for (const leg of trip.legs) breakKm.push(breakKm.at(-1) + leg.summary.length);
+  const ACCESS_ZONE_KM = 2;
   const segments = { ab: [], bs: [], free: [] };
   for (const chunk of chunks) {
     const ta = await valhalla("/trace_attributes", {
@@ -448,16 +457,18 @@ async function analyzeTrip(trip) {
       if (kind === "ab") kmAb += e.length;
       else if (kind === "bs") kmBs += e.length;
       else kmFree += e.length;
-      const isMinor = MINOR.includes(e.road_class);
+      const isMinor = Boolean(e.road_class) && !MAIN_ROADS.has(e.road_class);
       if (isMinor) minorKm += e.length;
       const truckSpeed = Math.min(e.speed || 50, isAb ? 90 : 60);
       driveH += e.length / truckSpeed;
       const pts = taShape.slice(e.begin_shape_index, e.end_shape_index + 1);
       if (pts.length > 1) segments[kind].push(pts);
-      // durchgehende Nebenstraßen (ohne erste/letzte Meile) für die Umleitung merken
+      // Nebenstraßen nur außerhalb der notwendigen Zufahrt zu jedem Stopp beanstanden.
       const midCum = cumKm + e.length / 2;
       cumKm += e.length;
-      if (isMinor && pts.length && midCum > 1.5 && midCum < totalKm - 1.5) {
+      const nearRoutePoint = breakKm.some((routePointKm) =>
+        Math.abs(midCum - routePointKm) <= ACCESS_ZONE_KM);
+      if (isMinor && pts.length && !nearRoutePoint && midCum < totalKm) {
         throughMinorKm += e.length;
         throughMinor.push(pts[Math.floor(pts.length / 2)]);
       }
@@ -465,6 +476,32 @@ async function analyzeTrip(trip) {
   }
   return { shape, kmAb, kmBs, kmFree, driveH, minorKm, throughMinorKm, throughMinor,
     segments, km: trip.summary.length };
+}
+
+async function selectMainRoadRoute(routeResponse) {
+  const candidates = [await analyzeTrip(routeResponse.trip)];
+  for (const alternative of routeResponse.alternates || []) {
+    candidates.push(await analyzeTrip(alternative.trip));
+  }
+  const fastest = Math.min(...candidates.map((candidate) => candidate.driveH));
+  return candidates
+    .filter((candidate) => candidate.driveH <= fastest * 1.45)
+    .reduce((best, candidate) => {
+      if (candidate.throughMinorKm < best.throughMinorKm - 0.15) return candidate;
+      if (best.throughMinorKm < candidate.throughMinorKm - 0.15) return best;
+      if (candidate.minorKm < best.minorKm - 0.3) return candidate;
+      if (best.minorKm < candidate.minorKm - 0.3) return best;
+      return candidate.driveH < best.driveH ? candidate : best;
+    });
+}
+
+function spacedAvoidLocations(points, limit = 12) {
+  const selected = [];
+  for (const point of points) {
+    if (selected.every((existing) => havKm(existing, point) > 0.35)) selected.push(point);
+    if (selected.length >= limit) break;
+  }
+  return selected;
 }
 
 // Baustellen/Sperrungen (highway=construction) im Kartenausschnitt via Overpass anzeigen.
@@ -583,27 +620,33 @@ async function calc() {
     const veh = selectedVehicleProfile();
     status.textContent = "Berechne Lkw-Route …";
 
-    const mainRes = await fetchRoute([a, ...stops, b], veh);
+    const routePoints = [a, ...stops, b];
+    const mainRes = await fetchRoute(routePoints, veh);
     const co2Class = $("co2").value;
     const rate = tollRate(vehicleSel.value, co2Class);
 
     status.textContent = "Analysiere Route …";
-    let main = await analyzeTrip(mainRes.trip);
+    let main = await selectMainRoadRoute(mainRes);
 
-    // Läuft die schnellste Route als Durchfahrt über enge Nebenstraßen? Dann unter Valhallas
-    // eigenen Alternativen die mit den wenigsten durchgehenden Nebenstraßen wählen (sichere,
-    // vorhersehbare Auswahl – keine künstlichen Umleitungen).
-    if (main.throughMinorKm > 0.8 && (mainRes.alternates || []).length) {
-      status.textContent = "Prüfe besser ausgebaute Alternativen …";
-      const cands = [main];
-      for (const alt of mainRes.alternates) cands.push(await analyzeTrip(alt.trip));
-      const minTime = Math.min(...cands.map((c) => c.driveH));
-      main = cands
-        .filter((c) => c.driveH <= minTime * 1.3)
-        .reduce((best, c) =>
-          c.throughMinorKm < best.throughMinorKm - 0.3 ? c
-            : best.throughMinorKm < c.throughMinorKm - 0.3 ? best
-            : c.driveH < best.driveH ? c : best);
+    // Problematische Nebenstraßen außerhalb der Adresszufahrten gezielt ausschließen.
+    // Zwei begrenzte Durchläufe verhindern Endlosschleifen und extreme Umwege.
+    let avoidLocations = [];
+    for (let attempt = 0; attempt < 2 && main.throughMinorKm > 0.35; attempt++) {
+      avoidLocations = spacedAvoidLocations([...avoidLocations, ...main.throughMinor], 18);
+      if (!avoidLocations.length) break;
+      status.textContent = "Suche Route über besser ausgebaute Straßen …";
+      try {
+        const rerouted = await selectMainRoadRoute(
+          await fetchRoute(routePoints, veh, avoidLocations));
+        if (rerouted.throughMinorKm < main.throughMinorKm - 0.1 &&
+            rerouted.driveH <= main.driveH * 1.5) {
+          main = rerouted;
+        } else {
+          break;
+        }
+      } catch {
+        break; // Zufahrten müssen erreichbar bleiben; ursprüngliche Route beibehalten.
+      }
     }
     main.toll = (main.kmAb + main.kmBs) * rate;
 

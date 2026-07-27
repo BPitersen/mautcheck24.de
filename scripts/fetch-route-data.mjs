@@ -141,7 +141,10 @@ for (let index = 0; index < pairs.length; index++) {
     costing: "truck",
     costing_options: { truck: {
       weight: 40, axle_count: 5, height: 4, width: 2.55, length: 16.5,
-      use_tracks: 0, use_living_streets: 0, service_penalty: 100, service_factor: 1.5,
+      use_highways: 1, use_tolls: 1, use_tracks: 0, use_living_streets: 0,
+      exclude_unpaved: true, shortest: false, maneuver_penalty: 30,
+      service_penalty: 7200, service_factor: 50,
+      private_access_penalty: 7200, gate_penalty: 7200,
     } },
     units: "kilometers",
   };
@@ -153,6 +156,8 @@ for (let index = 0; index < pairs.length; index++) {
     // In diesem Fall das Truck-Profil ohne zusätzliche Nebenstraßen-Strafen erneut versuchen.
     routePayload.costing_options.truck = {
       weight: 40, axle_count: 5, height: 4, width: 2.55, length: 16.5,
+      use_highways: 1, use_tolls: 1, use_tracks: 0, use_living_streets: 0,
+      exclude_unpaved: true, shortest: false, service_penalty: 7200, service_factor: 50,
     };
     tripResponse = await request("/route", routePayload);
   }
