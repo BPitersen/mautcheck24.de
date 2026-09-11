@@ -51,7 +51,20 @@
       autocapture: false,
       capture_pageview: false,
       capture_pageleave: true,
-      disable_session_recording: true,
+      disable_session_recording: false,
+      session_recording: {
+        // Formulareingaben verlassen den Browser nur vollständig maskiert.
+        maskAllInputs: true,
+        // Adressvorschläge und Rückmeldungen können Ortsangaben enthalten.
+        maskTextSelector: ".suggestions, .address-help",
+        // Die Kartenansicht kann eine Route räumlich erkennen lassen.
+        blockSelector: "#map",
+        // Geteilte Ergebnislinks enthalten Orte in der Query-String.
+        maskCapturedNetworkRequestFn: function (request) {
+          if (request?.name) request.name = request.name.split("?")[0];
+          return request;
+        },
+      },
       person_profiles: "identified_only",
       persistence: "localStorage",
       respect_dnt: true,
@@ -84,6 +97,7 @@
     removeDialog();
     if (accepted) loadPostHog();
     else if (window.posthog?.__loaded) {
+      window.posthog.stopSessionRecording?.();
       window.posthog.opt_out_capturing();
       window.posthog.reset();
     }
@@ -100,7 +114,7 @@
     dialog.innerHTML = `
       <div>
         <strong>${settingsMode ? "Analyse-Einstellungen" : "Hilf uns, mautcheck24 zu verbessern"}</strong>
-        <p>Mit deiner Zustimmung erfassen wir pseudonymisiert, welche Seiten und Rechner-Funktionen genutzt werden. Adressen und Routen werden nicht übertragen. <a href="/datenschutz/">Mehr erfahren</a></p>
+        <p>Mit deiner Zustimmung erfassen wir pseudonymisiert die Nutzung und eine maskierte Sitzungswiedergabe. Eingaben, Adressvorschläge und die Karte werden verborgen. <a href="/datenschutz/">Mehr erfahren</a></p>
       </div>
       <div class="analytics-consent-actions">
         <button type="button" data-consent="no">Nur erforderlich</button>

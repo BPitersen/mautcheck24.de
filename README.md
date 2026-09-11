@@ -34,8 +34,9 @@ laufen, weil es die detaillierten Routen-, Autobahn- und Übersichtsseiten erzeu
 # PostHog Analytics
 
 PostHog ist einwilligungsbasiert und mit der EU-Cloud vorbereitet. Vor einer Zustimmung
-wird das PostHog-Skript nicht geladen. Adressen und URL-Parameter werden nicht erfasst;
-Autocapture und Session Recording sind deaktiviert.
+wird das PostHog-Skript nicht geladen. Session Replay startet nur nach Zustimmung.
+Alle Eingabefelder und Adressvorschläge werden maskiert, die Karte wird vollständig
+aus der Aufnahme ausgeschlossen und Query-Parameter werden aus URLs entfernt.
 
 1. In PostHog ein Projekt in der Region **EU (Frankfurt)** anlegen.
 2. Den öffentlichen `phc_...` Project API Key in `posthog-config.js` eintragen.
