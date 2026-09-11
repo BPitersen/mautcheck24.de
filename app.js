@@ -395,7 +395,8 @@ const havKm = ([la1, lo1], [la2, lo2]) => {
   return 12742 * Math.asin(Math.sqrt(h));
 };
 
-function fetchRoute(points, veh, avoidLocations = [], useTolls = 1, useHighways = 1) {
+function fetchRoute(points, veh, avoidLocations = [], useTolls = 1, useHighways = 1,
+  alternativeCount = 2) {
   const request = {
     locations: points.map(({ lat, lon }) => ({ lat, lon })),
     costing: "truck",
@@ -415,7 +416,7 @@ function fetchRoute(points, veh, avoidLocations = [], useTolls = 1, useHighways 
     request.avoid_locations = avoidLocations.map(([lat, lon]) => ({ lat, lon }));
   }
   // Valhalla unterstützt Alternativrouten nur bei einer direkten A–B-Route.
-  if (points.length === 2) request.alternates = 2;
+  if (points.length === 2 && alternativeCount > 0) request.alternates = alternativeCount;
   return valhalla("/route", request);
 }
 
@@ -516,6 +517,12 @@ function uniqueRoutes(candidates) {
     seen.add(key);
     return true;
   });
+}
+
+function motorwayMidpoint(candidate) {
+  const motorwayPoints = candidate.segments.ab.flat();
+  if (motorwayPoints.length < 3) return null;
+  return motorwayPoints[Math.floor(motorwayPoints.length / 2)];
 }
 
 function selectRouteChoices(candidates, rate) {
@@ -778,7 +785,7 @@ async function calc() {
     try {
       // Weniger Autobahnpräferenz erzeugt auch Mischrouten, die eine Autobahn
       // früh verlassen und anschließend geeignete Landesstraßen nutzen.
-      saverResponse = await fetchRoute(routePoints, veh, [], 0.05, 0.4);
+      saverResponse = await fetchRoute(routePoints, veh, [], 0.05, 0.4, 1);
     } catch {
       // Die schnellste Route bleibt auch verfügbar, falls der zweite API-Aufruf scheitert.
     }
@@ -786,6 +793,20 @@ async function calc() {
     status.textContent = "Vergleiche Fahrzeit und Maut …";
     let candidates = await analyzeRouteResponse(fastResponse);
     if (saverResponse) candidates.push(...await analyzeRouteResponse(saverResponse));
+
+    // Valhalla bietet bei einer pauschalen Autobahngewichtung oft nur "lange
+    // Autobahn" oder "kaum Autobahn" an. Ein einzelner Sperrpunkt in der Mitte
+    // des Autobahnanteils erzeugt zusätzlich eine sinnvolle frühere Abfahrt.
+    const exitPoint = motorwayMidpoint(candidates[0]);
+    if (exitPoint) {
+      try {
+        status.textContent = "Prüfe eine frühere Autobahnabfahrt …";
+        const exitResponse = await fetchRoute(routePoints, veh, [exitPoint], 0.05, 0.5, 0);
+        candidates.push(...await analyzeRouteResponse(exitResponse));
+      } catch {
+        // Die übrigen Kandidaten bleiben vollständig nutzbar.
+      }
+    }
 
     // Problematische Nebenstraßen außerhalb der Adresszufahrten gezielt ausschließen.
     // Zwei begrenzte Durchläufe verhindern Endlosschleifen und extreme Umwege.
