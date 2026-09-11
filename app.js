@@ -348,7 +348,12 @@ function refreshWaypointLabels() {
   document.getElementById("add-waypoint").hidden = waypointEntries.length >= MAX_WAYPOINTS;
 }
 
-document.getElementById("add-waypoint").addEventListener("click", () => addWaypoint());
+document.getElementById("add-waypoint").addEventListener("click", () => {
+  addWaypoint();
+  window.mautcheckAnalytics?.capture("waypoint_added", {
+    waypoint_count: waypointEntries.length,
+  });
+});
 
 async function geocodeFallback(q) {
   const hits = await searchAddress(q, 1);
@@ -569,7 +574,10 @@ $("go").addEventListener("click", calc);
 document.addEventListener("keydown", (e) => {
   if (e.key === "Enter" && !e.target.closest(".autocomplete")) calc();
 });
-$("share-print").addEventListener("click", () => window.print());
+$("share-print").addEventListener("click", () => {
+  window.mautcheckAnalytics?.capture("result_shared", { channel: "print" });
+  window.print();
+});
 $("edit-inputs").addEventListener("click", () => {
   $("panel").scrollTo({
     top: 0,
@@ -581,9 +589,16 @@ $("share-copy").addEventListener("click", async () => {
   try {
     await navigator.clipboard.writeText(buildShareUrl());
     $("share-status").textContent = "Link wurde kopiert.";
+    window.mautcheckAnalytics?.capture("result_shared", { channel: "copy_link" });
   } catch {
     $("share-status").textContent = "Link konnte nicht kopiert werden.";
   }
+});
+$("share-whatsapp").addEventListener("click", () => {
+  window.mautcheckAnalytics?.capture("result_shared", { channel: "whatsapp" });
+});
+$("share-email").addEventListener("click", () => {
+  window.mautcheckAnalytics?.capture("result_shared", { channel: "email" });
 });
 
 // Start und Ziel tauschen (Werte + hinterlegte Koordinaten); bei sichtbarer Route neu rechnen
@@ -608,6 +623,12 @@ async function calc() {
     status.textContent = "Bitte den Zwischenstopp eingeben oder entfernen.";
     return;
   }
+
+  window.mautcheckAnalytics?.capture("route_calculation_started", {
+    vehicle: vehicleSel.value,
+    co2_class: $("co2").value,
+    waypoint_count: waypointEntries.length,
+  });
 
   btn.disabled = true;
   status.className = "working";
@@ -713,6 +734,14 @@ async function calc() {
     updateShareLinks();
     history.replaceState(null, "", buildShareUrl());
     status.textContent = "";
+    window.mautcheckAnalytics?.capture("route_calculation_completed", {
+      vehicle: vehicleSel.value,
+      co2_class: co2Class,
+      waypoint_count: waypointEntries.length,
+      route_km: Math.round(main.km),
+      toll_km: Math.round(main.kmAb + main.kmBs),
+      toll_eur: Number(main.toll.toFixed(2)),
+    });
 
     // Ergebnisdetails im eigenen Panel sichtbar machen. Die Karte und die Seite
     // behalten ihre Position; bei reduzierter Bewegung wird nicht animiert.
@@ -729,6 +758,10 @@ async function calc() {
   } catch (err) {
     status.className = "";
     status.textContent = err.message || "Fehler bei der Berechnung.";
+    window.mautcheckAnalytics?.capture("route_calculation_failed", {
+      stage: status.textContent.startsWith("Adresse nicht gefunden") ? "geocoding" : "routing",
+      waypoint_count: waypointEntries.length,
+    });
   } finally {
     btn.disabled = false;
   }

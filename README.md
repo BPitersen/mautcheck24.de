@@ -31,3 +31,19 @@ mautfreie Kilometer sowie Pausen und Beispielmaut berechnet. Das Skript benötig
 Netzwerkzugriff und sollte nur ausgeführt werden, wenn die Orientierungswerte neu
 berechnet werden sollen. `generate-routing-seo.mjs` muss anschließend zuletzt
 laufen, weil es die detaillierten Routen-, Autobahn- und Übersichtsseiten erzeugt.
+# PostHog Analytics
+
+PostHog ist einwilligungsbasiert und mit der EU-Cloud vorbereitet. Vor einer Zustimmung
+wird das PostHog-Skript nicht geladen. Adressen und URL-Parameter werden nicht erfasst;
+Autocapture und Session Recording sind deaktiviert.
+
+1. In PostHog ein Projekt in der Region **EU (Frankfurt)** anlegen.
+2. Den öffentlichen `phc_...` Project API Key in `posthog-config.js` eintragen.
+3. Änderungen veröffentlichen und im privaten Browserfenster testen.
+4. In PostHog unter **Activity** die Ereignisse `$pageview`,
+   `route_calculation_started`, `route_calculation_completed`,
+   `route_calculation_failed`, `waypoint_added` und `result_shared` prüfen.
+
+Die Einwilligung kann auf `/datenschutz/` über „Analyse-Einstellungen öffnen“ geändert
+werden. Der Project API Key ist für die Verwendung im Browser vorgesehen und kein
+geheimer Personal API Key.
