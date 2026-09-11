@@ -395,7 +395,7 @@ const havKm = ([la1, lo1], [la2, lo2]) => {
   return 12742 * Math.asin(Math.sqrt(h));
 };
 
-function fetchRoute(points, veh, avoidLocations = [], useTolls = 1) {
+function fetchRoute(points, veh, avoidLocations = [], useTolls = 1, useHighways = 1) {
   const request = {
     locations: points.map(({ lat, lon }) => ({ lat, lon })),
     costing: "truck",
@@ -403,7 +403,8 @@ function fetchRoute(points, veh, avoidLocations = [], useTolls = 1) {
       weight: veh.weight, axle_count: veh.axles,
       height: veh.height, width: veh.width, length: veh.length,
       // Hauptstraßen bevorzugen; Zufahrten zu Start, Ziel und Stopps bleiben erreichbar.
-      use_highways: 1, use_tolls: useTolls, use_tracks: 0, use_living_streets: 0,
+      use_highways: useHighways, use_tolls: useTolls,
+      use_tracks: 0, use_living_streets: 0,
       exclude_unpaved: true, shortest: false, maneuver_penalty: 30,
       service_penalty: 7200, service_factor: 50,
       private_access_penalty: 7200, gate_penalty: 7200,
@@ -775,7 +776,9 @@ async function calc() {
     const fastResponse = await fetchRoute(routePoints, veh, [], 1);
     let saverResponse = null;
     try {
-      saverResponse = await fetchRoute(routePoints, veh, [], 0.05);
+      // Weniger Autobahnpräferenz erzeugt auch Mischrouten, die eine Autobahn
+      // früh verlassen und anschließend geeignete Landesstraßen nutzen.
+      saverResponse = await fetchRoute(routePoints, veh, [], 0.05, 0.4);
     } catch {
       // Die schnellste Route bleibt auch verfügbar, falls der zweite API-Aufruf scheitert.
     }
