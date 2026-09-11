@@ -200,6 +200,27 @@ header .sub { color: var(--muted); font-size: .84rem; margin: 8px 0 22px; }
 .result-heading button:hover { text-decoration: underline; text-underline-offset: 3px; }
 .result-heading button:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; border-radius: 3px; }
 
+.route-options {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px;
+  margin: 0 0 12px;
+}
+.route-options[hidden] { display: none; }
+.route-option {
+  min-width: 0; padding: 10px; text-align: left; cursor: pointer;
+  color: var(--brand-deep); background: #fff; border: 1px solid var(--border-strong);
+  border-radius: 10px; font: inherit;
+}
+.route-option strong, .route-option span { display: block; }
+.route-option strong { font-size: .8rem; }
+.route-option span { margin-top: 3px; color: var(--muted); font-size: .7rem; white-space: nowrap; }
+.route-option:hover { background: #f5f8ff; border-color: var(--brand); }
+.route-option[aria-pressed="true"] {
+  color: #fff; background: var(--brand-deep); border-color: var(--brand-deep);
+  box-shadow: 0 4px 12px rgba(15, 41, 94, .18);
+}
+.route-option[aria-pressed="true"] span { color: rgba(255, 255, 255, .8); }
+.route-option:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
 .toll-box {
   background: linear-gradient(140deg, var(--brand-deep), var(--brand));
   color: #fff; border-radius: var(--radius); padding: 22px; text-align: center;

@@ -395,7 +395,7 @@ const havKm = ([la1, lo1], [la2, lo2]) => {
   return 12742 * Math.asin(Math.sqrt(h));
 };
 
-function fetchRoute(points, veh, avoidLocations = []) {
+function fetchRoute(points, veh, avoidLocations = [], useTolls = 1) {
   const request = {
     locations: points.map(({ lat, lon }) => ({ lat, lon })),
     costing: "truck",
@@ -403,7 +403,7 @@ function fetchRoute(points, veh, avoidLocations = []) {
       weight: veh.weight, axle_count: veh.axles,
       height: veh.height, width: veh.width, length: veh.length,
       // Hauptstraßen bevorzugen; Zufahrten zu Start, Ziel und Stopps bleiben erreichbar.
-      use_highways: 1, use_tolls: 1, use_tracks: 0, use_living_streets: 0,
+      use_highways: 1, use_tolls: useTolls, use_tracks: 0, use_living_streets: 0,
       exclude_unpaved: true, shortest: false, maneuver_penalty: 30,
       service_penalty: 7200, service_factor: 50,
       private_access_penalty: 7200, gate_penalty: 7200,
@@ -483,11 +483,15 @@ async function analyzeTrip(trip) {
     segments, km: trip.summary.length };
 }
 
-async function selectMainRoadRoute(routeResponse) {
+async function analyzeRouteResponse(routeResponse) {
   const candidates = [await analyzeTrip(routeResponse.trip)];
   for (const alternative of routeResponse.alternates || []) {
     candidates.push(await analyzeTrip(alternative.trip));
   }
+  return candidates;
+}
+
+function mainRoadCandidates(candidates) {
   const fastest = Math.min(...candidates.map((candidate) => candidate.driveH));
   const reasonable = candidates.filter((candidate) => candidate.driveH <= fastest * 1.45);
 
@@ -499,18 +503,43 @@ async function selectMainRoadRoute(routeResponse) {
   const leastMinor = Math.min(...mainRoadRoutes.map((candidate) => candidate.minorKm));
   const comparableRoads = mainRoadRoutes.filter(
     (candidate) => candidate.minorKm <= leastMinor + 0.3);
+  return comparableRoads;
+}
 
-  // Bei praktisch gleicher Fahrzeit ist eine deutlich kürzere Route sinnvoller:
-  // Sie verbraucht weniger Kraftstoff und ist häufig auch weniger mautpflichtig.
-  // Erst ab mehr als fünf Minuten Zeitvorteil gewinnt wieder die schnellere Route.
-  const fastestComparable = Math.min(...comparableRoads.map((candidate) => candidate.driveH));
-  const nearEqualTime = comparableRoads.filter(
-    (candidate) => candidate.driveH <= fastestComparable + 5 / 60);
-  return nearEqualTime.reduce((best, candidate) => {
+function uniqueRoutes(candidates) {
+  const seen = new Set();
+  return candidates.filter((candidate) => {
+    const middle = candidate.shape[Math.floor(candidate.shape.length / 2)] || [];
+    const key = `${candidate.km.toFixed(1)}:${middle.map((n) => n.toFixed(3)).join(":")}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function selectRouteChoices(candidates, rate) {
+  const suitable = mainRoadCandidates(uniqueRoutes(candidates));
+  suitable.forEach((candidate) => {
+    candidate.toll = (candidate.kmAb + candidate.kmBs) * rate;
+  });
+
+  const fastest = suitable.reduce((best, candidate) =>
+    candidate.driveH < best.driveH ? candidate : best);
+  const allowedExtraH = Math.min(15 / 60, fastest.driveH * 0.15);
+  const tollCandidates = suitable.filter(
+    (candidate) => candidate.driveH <= fastest.driveH + allowedExtraH + 0.001);
+  const saver = tollCandidates.reduce((best, candidate) => {
+    if (candidate.toll < best.toll - 0.05) return candidate;
+    if (best.toll < candidate.toll - 0.05) return best;
     if (candidate.km < best.km - 0.5) return candidate;
-    if (best.km < candidate.km - 0.5) return best;
     return candidate.driveH < best.driveH ? candidate : best;
   });
+
+  const meaningfulSaving = fastest.toll - saver.toll >= Math.max(0.5, fastest.toll * 0.03);
+  return meaningfulSaving
+    ? [{ kind: "fastest", label: "Schnellste Route", route: fastest },
+       { kind: "saving", label: "Maut sparen", route: saver }]
+    : [{ kind: "fastest", label: "Empfohlene Route", route: fastest }];
 }
 
 function spacedAvoidLocations(points, limit = 12) {
@@ -613,6 +642,89 @@ $("swap").addEventListener("click", () => {
   if (!$("result").hidden) calc();
 });
 
+let currentRouteChoices = [];
+let currentRouteIndex = 0;
+let currentRate = 0;
+
+function renderRoute(route, rate) {
+  // Lenk- und Ruhezeiten nach EU-VO 561/2006.
+  let remaining = route.driveH, days = 0, breaks45 = 0, extDays = 0, rests = 0;
+  while (remaining > 0.005) {
+    days++;
+    const cap = remaining > 9 && extDays < 2 ? 10 : 9;
+    const dayHours = Math.min(remaining, cap);
+    if (dayHours > 9) extDays++;
+    breaks45 += Math.floor((dayHours - 0.01) / 4.5);
+    remaining -= dayHours;
+    if (remaining > 0.005) rests++;
+  }
+  const totalH = route.driveH + breaks45 * 0.75 + rests * 11;
+
+  routeLayer.clearLayers();
+  L.polyline(route.shape, { color: "#2f6fe4", weight: 5, opacity: 0.85 }).addTo(routeLayer);
+  for (const points of route.segments.ab)
+    L.polyline(points, { color: "#e8641b", weight: 5, opacity: 0.95 }).addTo(routeLayer);
+  for (const points of route.segments.bs)
+    L.polyline(points, { color: "#e8a51b", weight: 5, opacity: 0.95 }).addTo(routeLayer);
+  map.fitBounds(L.latLngBounds(route.shape), { padding: [40, 40] });
+  showConstruction(route.shape, route.km).catch(() => {});
+
+  const parts = [];
+  if (breaks45 > 0) parts.push(`${breaks45} × 45 min Pause (teilbar 15 + 30 min)`);
+  if (rests > 0) parts.push(`${rests} × 11 h Tagesruhe`);
+  if (extDays > 0) parts.push(`${extDays} × 10-h-Tag genutzt (max. 2/Woche)`);
+  if (days > 1) parts.push(`${days} Fahrtage`);
+  $("r-breaks").textContent = parts.length
+    ? `inkl. Lenk- & Ruhezeiten: ca. ${fmtH(totalH)} (${parts.join(", ")})`
+    : "keine Pause nötig (unter 4,5 h Lenkzeit)";
+
+  $("r-toll").textContent = fmtEur(route.toll);
+  $("r-rate").textContent = `${(rate * 100).toFixed(1).replace(".", ",")} ct/km auf ${fmtKm(route.kmAb + route.kmBs)}`;
+  $("r-dist").textContent = fmtKm(route.km);
+  $("r-time").textContent = fmtH(route.driveH);
+  $("r-tollkm").textContent = fmtKm(route.kmAb + route.kmBs);
+  $("r-ab").textContent = fmtKm(route.kmAb);
+  $("r-bs").textContent = fmtKm(route.kmBs);
+  $("r-free").textContent = fmtKm(route.kmFree);
+}
+
+function selectDisplayedRoute(index, capture = true) {
+  if (!currentRouteChoices[index]) return;
+  currentRouteIndex = index;
+  const selected = currentRouteChoices[index];
+  document.querySelectorAll(".route-option").forEach((button, buttonIndex) => {
+    button.setAttribute("aria-pressed", buttonIndex === index ? "true" : "false");
+  });
+  renderRoute(selected.route, currentRate);
+  updateShareLinks();
+  history.replaceState(null, "", buildShareUrl());
+  if (capture) {
+    window.mautcheckAnalytics?.capture("route_option_selected", {
+      option: selected.kind,
+      route_km: Math.round(selected.route.km),
+      toll_eur: Number(selected.route.toll.toFixed(2)),
+    });
+  }
+}
+
+function showRouteChoices(choices, requestedKind) {
+  currentRouteChoices = choices;
+  const options = $("route-options");
+  options.hidden = choices.length < 2;
+  options.innerHTML = choices.map((choice, index) =>
+    `<button type="button" class="route-option" data-route-index="${index}" aria-pressed="false">` +
+      `<strong>${choice.label}</strong>` +
+      `<span>${fmtH(choice.route.driveH)} · ${fmtEur(choice.route.toll)}</span>` +
+    `</button>`).join("");
+  const requestedIndex = choices.findIndex((choice) => choice.kind === requestedKind);
+  selectDisplayedRoute(requestedIndex >= 0 ? requestedIndex : 0, false);
+}
+
+$("route-options").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-route-index]");
+  if (button) selectDisplayedRoute(Number(button.dataset.routeIndex));
+});
+
 async function calc() {
   const status = $("status");
   const btn = $("go");
@@ -655,26 +767,42 @@ async function calc() {
     status.textContent = "Berechne Lkw-Route …";
 
     const routePoints = [a, ...stops, b];
-    const mainRes = await fetchRoute(routePoints, veh);
     const co2Class = $("co2").value;
     const rate = tollRate(vehicleSel.value, co2Class);
 
-    status.textContent = "Analysiere Route …";
-    let main = await selectMainRoadRoute(mainRes);
+    // Ein schneller und ein mautsensitiver Valhalla-Lauf liefern jeweils bis zu
+    // zwei Alternativen. Erst unsere Analyse bewertet Hauptstraßen, Zeit und Maut.
+    const fastResponse = await fetchRoute(routePoints, veh, [], 1);
+    let saverResponse = null;
+    try {
+      saverResponse = await fetchRoute(routePoints, veh, [], 0.05);
+    } catch {
+      // Die schnellste Route bleibt auch verfügbar, falls der zweite API-Aufruf scheitert.
+    }
+
+    status.textContent = "Vergleiche Fahrzeit und Maut …";
+    let candidates = await analyzeRouteResponse(fastResponse);
+    if (saverResponse) candidates.push(...await analyzeRouteResponse(saverResponse));
 
     // Problematische Nebenstraßen außerhalb der Adresszufahrten gezielt ausschließen.
     // Zwei begrenzte Durchläufe verhindern Endlosschleifen und extreme Umwege.
     let avoidLocations = [];
-    for (let attempt = 0; attempt < 2 && main.throughMinorKm > 0.35; attempt++) {
-      avoidLocations = spacedAvoidLocations([...avoidLocations, ...main.throughMinor], 18);
+    let roadReference = mainRoadCandidates(uniqueRoutes(candidates)).reduce((best, candidate) =>
+      candidate.throughMinorKm < best.throughMinorKm ? candidate : best);
+    for (let attempt = 0; attempt < 2 && roadReference.throughMinorKm > 0.35; attempt++) {
+      avoidLocations = spacedAvoidLocations(
+        [...avoidLocations, ...roadReference.throughMinor], 18);
       if (!avoidLocations.length) break;
       status.textContent = "Suche Route über besser ausgebaute Straßen …";
       try {
-        const rerouted = await selectMainRoadRoute(
-          await fetchRoute(routePoints, veh, avoidLocations));
-        if (rerouted.throughMinorKm < main.throughMinorKm - 0.1 &&
-            rerouted.driveH <= main.driveH * 1.5) {
-          main = rerouted;
+        const rerouted = await analyzeRouteResponse(
+          await fetchRoute(routePoints, veh, avoidLocations, 1));
+        const improved = mainRoadCandidates(uniqueRoutes(rerouted)).reduce((best, candidate) =>
+          candidate.throughMinorKm < best.throughMinorKm ? candidate : best);
+        if (improved.throughMinorKm < roadReference.throughMinorKm - 0.1 &&
+            improved.driveH <= roadReference.driveH * 1.5) {
+          candidates.push(...rerouted);
+          roadReference = improved;
         } else {
           break;
         }
@@ -682,65 +810,23 @@ async function calc() {
         break; // Zufahrten müssen erreichbar bleiben; ursprüngliche Route beibehalten.
       }
     }
-    main.toll = (main.kmAb + main.kmBs) * rate;
+    const choices = selectRouteChoices(candidates, rate);
+    currentRate = rate;
 
-    // Lenk- und Ruhezeiten nach EU-VO 561/2006:
-    // 45 min Pause je volle 4,5 h Lenkzeit (teilbar in 15 + 30 min),
-    // 9 h Tageslenkzeit, 2x/Woche auf 10 h verlängerbar, dann 11 h Tagesruhe
-    let remaining = main.driveH, days = 0, breaks45 = 0, extDays = 0, rests = 0;
-    while (remaining > 0.005) {
-      days++;
-      const cap = remaining > 9 && extDays < 2 ? 10 : 9;
-      const d = Math.min(remaining, cap);
-      if (d > 9) extDays++;
-      breaks45 += Math.floor((d - 0.01) / 4.5);
-      remaining -= d;
-      if (remaining > 0.005) rests++;
-    }
-    const totalH = main.driveH + breaks45 * 0.75 + rests * 11;
-
-    // Karte zeichnen
-    routeLayer.clearLayers();
-    L.polyline(main.shape, { color: "#2f6fe4", weight: 5, opacity: 0.85 }).addTo(routeLayer);
-    for (const pts of main.segments.ab)
-      L.polyline(pts, { color: "#e8641b", weight: 5, opacity: 0.95 }).addTo(routeLayer);
-    for (const pts of main.segments.bs)
-      L.polyline(pts, { color: "#e8a51b", weight: 5, opacity: 0.95 }).addTo(routeLayer);
-    map.fitBounds(L.latLngBounds(main.shape), { padding: [40, 40] });
-
-    // Baustellen im Ausschnitt nachladen (nicht-blockierend)
-    showConstruction(main.shape, main.km).catch(() => {});
-
-    // Ergebnis anzeigen
-    const parts = [];
-    if (breaks45 > 0) parts.push(`${breaks45} × 45 min Pause (teilbar 15 + 30 min)`);
-    if (rests > 0) parts.push(`${rests} × 11 h Tagesruhe`);
-    if (extDays > 0) parts.push(`${extDays} × 10-h-Tag genutzt (max. 2/Woche)`);
-    if (days > 1) parts.push(`${days} Fahrtage`);
-    $("r-breaks").textContent = parts.length
-      ? `inkl. Lenk- & Ruhezeiten: ca. ${fmtH(totalH)} (${parts.join(", ")})`
-      : "keine Pause nötig (unter 4,5 h Lenkzeit)";
-
-    $("r-toll").textContent = fmtEur(main.toll);
-    $("r-rate").textContent = `${(rate * 100).toFixed(1).replace(".", ",")} ct/km auf ${fmtKm(main.kmAb + main.kmBs)}`;
-    $("r-dist").textContent = fmtKm(main.km);
-    $("r-time").textContent = fmtH(main.driveH);
-    $("r-tollkm").textContent = fmtKm(main.kmAb + main.kmBs);
-    $("r-ab").textContent = fmtKm(main.kmAb);
-    $("r-bs").textContent = fmtKm(main.kmBs);
-    $("r-free").textContent = fmtKm(main.kmFree);
-
+    const requestedKind = new URLSearchParams(location.search).get("route") || "fastest";
+    showRouteChoices(choices, requestedKind);
+    const selected = currentRouteChoices[currentRouteIndex].route;
     $("result").hidden = false;
-    updateShareLinks();
-    history.replaceState(null, "", buildShareUrl());
     status.textContent = "";
     window.mautcheckAnalytics?.capture("route_calculation_completed", {
       vehicle: vehicleSel.value,
       co2_class: co2Class,
       waypoint_count: waypointEntries.length,
-      route_km: Math.round(main.km),
-      toll_km: Math.round(main.kmAb + main.kmBs),
-      toll_eur: Number(main.toll.toFixed(2)),
+      alternatives_shown: choices.length,
+      selected_option: currentRouteChoices[currentRouteIndex].kind,
+      route_km: Math.round(selected.km),
+      toll_km: Math.round(selected.kmAb + selected.kmBs),
+      toll_eur: Number(selected.toll.toFixed(2)),
     });
 
     // Ergebnisdetails im eigenen Panel sichtbar machen. Die Karte und die Seite
@@ -778,6 +864,9 @@ function buildShareUrl() {
   url.searchParams.set("hoehe", dimensionInputs.height.value);
   url.searchParams.set("breite", dimensionInputs.width.value);
   url.searchParams.set("laenge", dimensionInputs.length.value);
+  if (currentRouteChoices[currentRouteIndex]) {
+    url.searchParams.set("route", currentRouteChoices[currentRouteIndex].kind);
+  }
   return url.toString();
 }
 
